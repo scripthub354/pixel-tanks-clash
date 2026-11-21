@@ -5,39 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#05070a">
-<title>⚡ RAILGUN · v2.0</title>
+<title>⚡ RAILGUN · v3.0</title>
 <style>
   * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
   html, body {
     margin: 0; padding: 0; width: 100%; height: 100%;
     background: #05070a; font-family: 'Segoe UI', system-ui, monospace;
     overflow: hidden; touch-action: none; overscroll-behavior: none;
-    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
+    position: fixed; inset: 0;
   }
   body {
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(ellipse at 30% 20%, #101620 0%, #05070a 70%);
-    position: fixed; inset: 0;
   }
 
   #lockScreen {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(ellipse at 50% 30%, #0c1420 0%, #030507 80%);
-    transition: opacity 0.4s ease, visibility 0.4s ease;
-    padding: 1rem;
+    transition: opacity 0.4s ease, visibility 0.4s ease; padding: 1rem;
   }
   #lockScreen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
   .lock-box {
     background: linear-gradient(160deg, #121a28, #080b11);
     border: 1px solid #2a4a7a; border-radius: 20px;
     padding: 2rem 1.5rem; width: 100%; max-width: 380px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(40,120,255,0.25), 0 30px 60px black;
+    text-align: center; box-shadow: 0 0 60px rgba(40,120,255,0.25);
   }
-  .lock-icon { font-size: 3.5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 20px #4f9eff); }
+  .lock-icon { font-size: 3.5rem; margin-bottom: 1rem; }
   .lock-title { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 3px; color: #aad0ff; margin-bottom: 0.4rem; }
   .lock-subtitle { font-size: 0.85rem; color: #5f7a9e; margin-bottom: 1.5rem; }
   .lock-input {
@@ -45,76 +41,57 @@
     border-radius: 12px; padding: 0.8rem 1rem; color: #c8deff;
     font-size: 1.1rem; font-family: inherit; text-align: center;
     letter-spacing: 3px; outline: none; margin-bottom: 1rem;
-    -webkit-appearance: none;
   }
-  .lock-input:focus { border-color: #5f9eff; box-shadow: 0 0 20px rgba(80,160,255,0.4); }
   .lock-btn {
     width: 100%; background: linear-gradient(180deg, #2e5a8a, #1a3350);
     border: 1px solid #7df9ff; color: #fff; font-weight: bold;
     font-size: 1rem; padding: 0.9rem; border-radius: 12px;
     cursor: pointer; letter-spacing: 2px; text-transform: uppercase;
-    -webkit-appearance: none;
   }
-  .lock-btn:active { transform: scale(0.97); }
   .lock-error-msg { color: #ff6666; font-size: 0.85rem; margin-top: 0.8rem; min-height: 1.2rem; font-weight: 600; }
 
   #gameContainer { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; }
   #gameContainer.visible { display: flex; }
 
   .game-wrapper {
-    position: relative; width: 100vw; max-width: 1600px;
-    height: 100vh; max-height: 1000px;
+    position: relative; width: 100vw; height: 100vh; max-width: 1600px; max-height: 1000px;
     background: linear-gradient(145deg, #0f131b 0%, #080b10 100%);
-    border-radius: 0; padding: 6px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.95), 0 0 0 1px rgba(100,160,255,0.12);
-    display: flex; flex-direction: column; overflow: hidden;
+    padding: 4px; display: flex; flex-direction: column; overflow: hidden;
   }
   @media (min-width: 800px) {
     .game-wrapper { border-radius: 18px; padding: 10px; width: 98vw; height: 96vh; }
   }
 
   .canvas-container {
-    position: relative; flex: 1; border-radius: 10px; overflow: hidden; background: #06090e;
-    box-shadow: inset 0 0 80px rgba(0,20,40,0.9), inset 0 0 0 1px rgba(80,140,255,0.15);
+    position: relative; flex: 1; border-radius: 8px; overflow: hidden; background: #06090e;
     touch-action: none;
   }
-  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; border-radius: 10px; touch-action: none; }
+  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
 
   .stats-bar {
     display: flex; justify-content: space-between; align-items: center;
-    margin-top: 6px; padding: 0 2px; gap: 3px; flex-wrap: wrap;
-    color: #c8deff; font-weight: 600; font-size: 0.72rem;
+    margin-top: 4px; padding: 0 2px; gap: 3px; flex-wrap: wrap;
+    color: #c8deff; font-weight: 600; font-size: 0.7rem;
   }
   .hud-item {
     display: flex; align-items: center; gap: 3px;
     background: linear-gradient(180deg, #141c28, #0b1118);
     border: 1px solid #2a3f5c; padding: 2px 6px; border-radius: 5px;
-    min-height: 28px;
+    min-height: 26px;
   }
   .level-badge { color: #ffd966; border-color: #5a4a1f; }
-  .level-badge span { color: #fff3c4; font-size: 0.85rem; }
   .gem-badge { color: #c77dff; border-color: #5a2e8a; }
-  .gem-badge span { color: #e8c8ff; font-size: 0.85rem; }
-  .mode-badge { color: #ff9a5c; border-color: #8a4a1a; display: none; }
-  @media (min-width: 500px) { .mode-badge { display: flex; } }
-  .hp-container { display: flex; align-items: center; gap: 3px; }
-  .hp-fill { width: 70px; height: 10px; background: #0a0e14; border-radius: 3px; overflow: hidden; border: 1px solid #3a1f28; }
+  .hp-fill { width: 60px; height: 9px; background: #0a0e14; border-radius: 3px; overflow: hidden; border: 1px solid #3a1f28; }
   @media (min-width: 500px) { .hp-fill { width: 90px; height: 12px; } }
-  .hp-fill span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff1f4b, #ff8a5c); border-radius: 2px; transition: width 0.12s ease; }
+  .hp-fill span { display: block; height: 100%; background: linear-gradient(90deg, #ff1f4b, #ff8a5c); transition: width 0.12s ease; }
 
-  button { font-family: inherit; cursor: pointer; transition: all 0.15s ease; border: none; outline: none; -webkit-appearance: none; }
-  .sound-toggle, .restart-btn, .admin-toggle, .shop-btn, .tanks-btn, .modes-btn {
+  button { font-family: inherit; cursor: pointer; border: none; outline: none; -webkit-appearance: none; }
+  .hud-btn {
     font-weight: bold; padding: 4px 6px; border-radius: 5px; font-size: 0.7rem; border: 1px solid;
-    min-width: 30px; min-height: 30px; display: flex; align-items: center; justify-content: center;
+    min-width: 28px; min-height: 28px; display: flex; align-items: center; justify-content: center;
+    background: #14202e; border-color: #2e5a8a; color: #b8d4ff;
   }
-  .sound-toggle { background: #1a2432; border-color: #2e4a7a; color: #b8d4ff; }
-  .admin-toggle { background: #2e1616; border-color: #8a2e2e; color: #ffb8b8; }
-  .admin-toggle.locked { opacity: 0.6; }
-  .restart-btn { background: #14202e; border-color: #2e5a8a; color: #b8d4ff; }
-  .shop-btn { background: #2a1a3e; border-color: #7a2e8a; color: #e0b8ff; }
-  .tanks-btn { background: #1a2e1a; border-color: #2e7a2e; color: #b8ffb8; }
-  .modes-btn { background: #2e2a1a; border-color: #7a6e2e; color: #ffffb8; }
-  button:active { transform: scale(0.92); }
+  .hud-btn:active { transform: scale(0.9); }
 
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(2,4,8,0.92); backdrop-filter: blur(6px);
@@ -124,10 +101,8 @@
   .modal {
     background: linear-gradient(160deg, #121a28, #080b11);
     border-radius: 14px; border: 1px solid #2a4a7a;
-    box-shadow: 0 0 60px rgba(40,120,255,0.25), 0 30px 60px black;
     max-width: 900px; width: 100%; max-height: 92vh; overflow-y: auto;
-    padding: 1rem; color: #c8deff;
-    -webkit-overflow-scrolling: touch;
+    padding: 1rem; color: #c8deff; -webkit-overflow-scrolling: touch;
   }
   .modal-header {
     display: flex; justify-content: space-between; align-items: center;
@@ -137,7 +112,6 @@
   .close-btn {
     background: #2a1a1a; border: 1px solid #8a2e2e; color: #ffb8b8;
     width: 32px; height: 32px; border-radius: 50%; font-size: 0.95rem; font-weight: bold;
-    min-width: 32px;
   }
 
   .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem; }
@@ -146,11 +120,9 @@
     border-radius: 10px; border: 2px solid #3a5a8a; padding: 0.8rem 0.4rem;
     text-align: center; cursor: pointer;
   }
-  .chest-card:active { transform: scale(0.97); }
   .chest-card .chest-icon { font-size: 2rem; margin-bottom: 0.3rem; }
-  .chest-card .chest-name { font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.3rem; }
-  .chest-card .chest-desc { font-size: 0.65rem; color: #97b9e0; margin-bottom: 0.4rem; line-height: 1.3; }
-  .chest-card .chest-price { display: inline-block; background: #5a2e8a; color: #e8c8ff; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: bold; font-size: 0.75rem; border: 1px solid #7a4aae; }
+  .chest-card .chest-name { font-size: 0.8rem; font-weight: 700; color: #fff; }
+  .chest-card .chest-price { display: inline-block; background: #5a2e8a; color: #e8c8ff; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: bold; font-size: 0.75rem; margin-top: 0.3rem; }
   .chest-card.locked { opacity: 0.5; }
 
   .tanks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 0.5rem; }
@@ -159,7 +131,6 @@
     border-radius: 8px; border: 2px solid #3a5a8a; padding: 0.6rem 0.3rem;
     text-align: center; cursor: pointer; position: relative;
   }
-  .tank-card:active { transform: scale(0.96); }
   .tank-card.active { border-color: #7df9ff; box-shadow: 0 0 20px #3e7eff; }
   .tank-card.locked { opacity: 0.5; }
   .tank-card .tank-icon { font-size: 1.6rem; margin-bottom: 0.2rem; }
@@ -169,7 +140,7 @@
   .rarity-comun { color: #8a9ab0; } .rarity-raro { color: #5f9eff; }
   .rarity-epico { color: #c77dff; } .rarity-legendario { color: #ffd966; }
   .rarity-secreto { color: #ff5c8a; } .rarity-exotico { color: #4dffb8; }
-  .rarity-mitico { color: #ff4dff; }
+  .rarity-mitico { color: #ff4dff; } .rarity-admin { color: #ff0000; text-shadow: 0 0 8px #ff0000; }
   .tank-card .tank-lock { position: absolute; top: 3px; right: 3px; font-size: 0.7rem; }
 
   .modes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; }
@@ -178,19 +149,17 @@
     border-radius: 10px; border: 2px solid #3a5a8a; padding: 0.9rem 0.6rem;
     text-align: center; cursor: pointer;
   }
-  .mode-card:active { transform: scale(0.97); }
   .mode-card.active { border-color: #7df9ff; box-shadow: 0 0 20px #3e7eff; }
   .mode-card .mode-icon { font-size: 2rem; margin-bottom: 0.3rem; }
-  .mode-card .mode-name { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
+  .mode-card .mode-name { font-size: 0.85rem; font-weight: 700; color: #fff; }
   .mode-card .mode-desc { font-size: 0.7rem; color: #97b9e0; line-height: 1.3; }
 
   .admin-panel {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 320px; max-width: 92vw;
+    width: 340px; max-width: 92vw;
     background: linear-gradient(160deg, #0f131c, #080b11);
     border: 1px solid #8a2e2e; border-radius: 14px; padding: 0.9rem; z-index: 20;
     color: #ffd8d8; display: none; font-size: 0.75rem; max-height: 88vh; overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
   .admin-panel.open { display: block; }
   .admin-panel h3 { margin: 0 0 0.6rem 0; color: #ff6b6b; font-size: 0.9rem; }
@@ -205,39 +174,11 @@
   .weapon-btn { background: #14202e; border: 1px solid #2e4a7a; color: #b8d4ff; padding: 0.25rem 0.4rem; border-radius: 5px; font-size: 0.68rem; margin: 0 0.15rem 0.25rem 0; font-weight: 600; }
   .weapon-btn.active { background: #2e5a8a; border-color: #7df9ff; color: #fff; }
 
-  .cards-overlay {
-    position: fixed; inset: 0; background: rgba(2,4,8,0.9); backdrop-filter: blur(6px);
-    display: flex; justify-content: center; align-items: center;
-    visibility: hidden; opacity: 0; transition: opacity 0.25s ease;
-    pointer-events: none; z-index: 10; padding: 0.5rem;
-  }
-  .cards-overlay.active { visibility: visible; opacity: 1; pointer-events: auto; }
-  .cards-container { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; max-width: 700px; }
-  .card {
-    width: 120px; height: 180px;
-    background: linear-gradient(160deg, #1c273a, #0d141f);
-    border-radius: 10px; border: 1px solid #3a5a8a;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 0.7rem 0.5rem; color: #c6e2ff; text-align: center;
-    cursor: pointer; font-weight: 600;
-  }
-  .card:active { transform: scale(0.97); }
-  .card .icon { font-size: 2rem; margin-bottom: 0.3rem; }
-  .card .title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: #aad0ff; margin-bottom: 0.4rem; border-bottom: 1px solid #2e5a8a; padding-bottom: 0.3rem; width: 100%; }
-  .card .desc { font-size: 0.68rem; color: #97b9e0; line-height: 1.3; font-weight: 400; }
-  @media (min-width: 500px) {
-    .card { width: 150px; height: 220px; padding: 1rem 0.7rem; }
-    .card .icon { font-size: 2.4rem; }
-    .card .title { font-size: 0.9rem; }
-    .card .desc { font-size: 0.75rem; }
-  }
-
   .toast {
     position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-20px);
     background: #1a2e4a; border: 1px solid #5f9eff; border-radius: 8px; padding: 0.4rem 1rem;
-    color: #c8deff; font-weight: bold; box-shadow: 0 0 20px rgba(80,160,255,0.5);
-    z-index: 30; opacity: 0; transition: all 0.3s ease; pointer-events: none; font-size: 0.78rem;
-    max-width: 90vw; text-align: center;
+    color: #c8deff; font-weight: bold; z-index: 30; opacity: 0; transition: all 0.3s ease;
+    pointer-events: none; font-size: 0.78rem; max-width: 90vw; text-align: center;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .chest-opening { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; text-align: center; }
@@ -246,15 +187,17 @@
   .reward-display { font-size: 1rem; font-weight: bold; color: #ffd966; margin-top: 0.6rem; }
   .reward-sub { font-size: 0.75rem; color: #97b9e0; margin-top: 0.3rem; }
 
-  /* ===== CONTROLES TÁCTILES ===== */
+  /* ===== DOBLE JOYSTICK ===== */
   .joystick-zone {
-    position: absolute; bottom: 15px; left: 15px;
+    position: absolute; bottom: 20px;
     width: 110px; height: 110px;
     background: rgba(30, 60, 100, 0.3);
     border: 2px solid rgba(100, 180, 255, 0.4);
     border-radius: 50%; display: none; z-index: 5; touch-action: none;
   }
   .joystick-zone.active { display: block; }
+  .joystick-zone.left { left: 20px; }
+  .joystick-zone.right { right: 20px; background: rgba(100, 30, 30, 0.3); border-color: rgba(255, 120, 120, 0.4); }
   .joystick-knob {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 46px; height: 46px;
@@ -262,38 +205,49 @@
     border-radius: 50%; border: 2px solid rgba(200, 240, 255, 0.6);
     box-shadow: 0 0 20px #4df0ff; pointer-events: none;
   }
-  .fire-zone {
-    position: absolute; bottom: 25px; right: 20px;
-    width: 80px; height: 80px;
-    background: rgba(255, 80, 80, 0.3);
-    border: 2px solid rgba(255, 120, 120, 0.6);
-    border-radius: 50%; display: none; z-index: 5; touch-action: none;
-    justify-content: center; align-items: center;
-    color: #ffcccc; font-weight: bold; font-size: 0.75rem;
+  .joystick-zone.right .joystick-knob {
+    background: radial-gradient(circle, #ff6666, #aa1a1a);
+    border-color: rgba(255, 200, 200, 0.6);
+    box-shadow: 0 0 20px #ff6666;
   }
-  .fire-zone.active { display: flex; }
-  .fire-zone:active { background: rgba(255, 80, 80, 0.6); }
 
   .minimap {
     position: absolute; top: 8px; right: 8px;
-    width: 100px; height: 100px;
+    width: 90px; height: 90px;
     background: rgba(5, 10, 18, 0.7);
     border: 1px solid rgba(80, 140, 255, 0.3);
     border-radius: 6px; z-index: 4; pointer-events: none;
   }
-  @media (min-width: 800px) {
-    .minimap { width: 130px; height: 130px; }
-  }
+  @media (min-width: 800px) { .minimap { width: 130px; height: 130px; } }
 
-  /* Fullscreen button */
   .fullscreen-btn {
     position: absolute; top: 8px; left: 8px;
     background: rgba(20, 30, 50, 0.8);
     border: 1px solid rgba(100, 160, 255, 0.4);
-    color: #b8d4ff; width: 36px; height: 36px;
-    border-radius: 6px; font-size: 1rem;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 6;
+    color: #b8d4ff; width: 32px; height: 32px;
+    border-radius: 6px; font-size: 0.9rem; z-index: 6;
+  }
+
+  /* ===== BARRA DE MEJORAS ===== */
+  .upgrade-bar {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 3px; z-index: 6; background: rgba(10, 15, 25, 0.8);
+    padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(80, 140, 255, 0.3);
+  }
+  .upgrade-btn {
+    background: #1a2a3e; border: 1px solid #3a5a8a; color: #c8deff;
+    width: 36px; height: 36px; border-radius: 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 0.55rem; font-weight: bold; cursor: pointer;
+    position: relative;
+  }
+  .upgrade-btn .upg-icon { font-size: 0.9rem; line-height: 1; }
+  .upgrade-btn .upg-cost { font-size: 0.5rem; color: #ffd966; }
+  .upgrade-btn:active { transform: scale(0.9); }
+  .upgrade-btn.maxed { opacity: 0.4; }
+  @media (min-width: 500px) {
+    .upgrade-btn { width: 44px; height: 44px; font-size: 0.6rem; }
+    .upgrade-btn .upg-icon { font-size: 1.1rem; }
   }
 </style>
 </head>
@@ -303,39 +257,41 @@
   <div class="lock-box">
     <div class="lock-icon">🔒</div>
     <div class="lock-title">Acceso Restringido</div>
-    <div class="lock-subtitle">Introduce la contraseña para jugar</div>
-    <input type="password" id="passwordInput" class="lock-input" placeholder="••••••••" autocomplete="off" maxlength="32" inputmode="text">
+    <div class="lock-subtitle">Introduce la contraseña</div>
+    <input type="password" id="passwordInput" class="lock-input" placeholder="••••••••" autocomplete="off" maxlength="32">
     <button id="unlockBtn" class="lock-btn">Desbloquear</button>
     <div id="lockError" class="lock-error-msg"></div>
   </div>
 </div>
 
 <div id="gameContainer">
-  <div class="game-wrapper" id="gameWrapper">
+  <div class="game-wrapper">
     <div class="canvas-container" id="canvasContainer">
       <canvas id="gameCanvas"></canvas>
       <canvas id="minimap" class="minimap" width="130" height="130"></canvas>
-      <button class="fullscreen-btn" id="fullscreenBtn" title="Pantalla completa">⛶</button>
-      <div class="joystick-zone" id="joystickZone">
-        <div class="joystick-knob" id="joystickKnob"></div>
+      <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
+      <div class="joystick-zone left" id="joystickLeft">
+        <div class="joystick-knob" id="knobLeft"></div>
       </div>
-      <div class="fire-zone" id="fireZone">FUEGO</div>
+      <div class="joystick-zone right" id="joystickRight">
+        <div class="joystick-knob" id="knobRight"></div>
+      </div>
+      <div class="upgrade-bar" id="upgradeBar"></div>
     </div>
     <div class="stats-bar">
       <div class="hud-item level-badge">⭐ <span id="levelDisplay">1</span></div>
       <div class="hud-item gem-badge">💎 <span id="gemDisplay">0</span></div>
-      <div class="hud-item mode-badge">🎮 <span id="modeDisplay">Supervivencia</span></div>
       <div class="hud-item hp-container">
         <span>❤️</span>
         <div class="hp-fill"><span id="hpFill" style="width:100%"></span></div>
       </div>
       <div class="hud-item" style="padding:2px 4px;gap:2px;">
-        <button class="modes-btn" id="modesBtn" title="Modos">🎮</button>
-        <button class="tanks-btn" id="tanksBtn" title="Tanques">🚀</button>
-        <button class="shop-btn" id="shopBtn" title="Tienda">🛒</button>
-        <button class="sound-toggle" id="soundToggle" title="Sonido">🔊</button>
-        <button class="admin-toggle locked" id="adminToggle" title="Admin">🔨</button>
-        <button class="restart-btn" id="restartBtn" title="Reiniciar">⟳</button>
+        <button class="hud-btn" id="modesBtn" title="Modos">🎮</button>
+        <button class="hud-btn" id="tanksBtn" title="Cambiar tanque">🚀</button>
+        <button class="hud-btn" id="shopBtn" title="Tienda">🛒</button>
+        <button class="hud-btn" id="soundToggle" title="Sonido">🔊</button>
+        <button class="hud-btn" id="adminToggle" title="Admin">🔨</button>
+        <button class="hud-btn" id="restartBtn" title="Reiniciar">⟳</button>
       </div>
     </div>
   </div>
@@ -343,46 +299,30 @@
 
 <div class="modal-overlay" id="shopModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🛒 Tienda</div>
-      <button class="close-btn" data-close="shopModal">✕</button>
-    </div>
-    <div style="text-align:center;margin-bottom:0.6rem;font-size:0.9rem;">
-      Gemas: <span style="color:#e8c8ff;font-weight:bold;">💎 <span id="shopGemCount">0</span></span>
-    </div>
+    <div class="modal-header"><div class="modal-title">🛒 Tienda</div><button class="close-btn" data-close="shopModal">✕</button></div>
+    <div style="text-align:center;margin-bottom:0.6rem;font-size:0.9rem;">Gemas: <span style="color:#e8c8ff;font-weight:bold;">💎 <span id="shopGemCount">0</span></span></div>
     <div class="shop-grid" id="shopGrid"></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="tanksModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🚀 Tanques</div>
-      <button class="close-btn" data-close="tanksModal">✕</button>
-    </div>
-    <div style="text-align:center;margin-bottom:0.5rem;font-size:0.75rem;color:#97b9e0;">
-      Se desbloquean cada 5 niveles (nivel: <span id="tankLevelReq" style="color:#7df9ff;font-weight:bold;">5</span>)
-    </div>
+    <div class="modal-header"><div class="modal-title">🚀 Tanques</div><button class="close-btn" data-close="tanksModal">✕</button></div>
+    <div style="text-align:center;margin-bottom:0.5rem;font-size:0.75rem;color:#97b9e0;">Árbol de evolución · Nivel actual: <span id="tankLevelReq" style="color:#7df9ff;font-weight:bold;">1</span></div>
     <div class="tanks-grid" id="tanksGrid"></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modesModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🎮 Modos</div>
-      <button class="close-btn" data-close="modesModal">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">🎮 Modos</div><button class="close-btn" data-close="modesModal">✕</button></div>
     <div class="modes-grid" id="modesGrid"></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="chestModal">
   <div class="modal" style="max-width:420px;">
-    <div class="modal-header">
-      <div class="modal-title">🎁 Cofre</div>
-      <button class="close-btn" data-close="chestModal">✕</button>
-    </div>
+    <div class="modal-header"><div class="modal-title">🎁 Cofre</div><button class="close-btn" data-close="chestModal">✕</button></div>
     <div class="chest-opening" id="chestOpening"></div>
   </div>
 </div>
@@ -393,32 +333,20 @@
     <button id="adminClose" style="background:#2a1a1a;border:1px solid #8a2e2e;color:#ffb8b8;width:24px;height:24px;border-radius:50%;font-size:0.85rem;font-weight:bold;">✕</button>
   </div>
   <div class="admin-section">
-    <div class="admin-section-title">Armas</div>
-    <div id="adminWeaponList" style="display:flex;flex-wrap:wrap;"></div>
-  </div>
-  <div class="admin-section">
-    <div class="admin-section-title">Estadísticas</div>
-    <div class="admin-row"><label>Daño</label><input type="number" id="admDamage" value="12"><button class="admin-btn" style="width:auto" data-apply="damage">✓</button></div>
-    <div class="admin-row"><label>Cadencia</label><input type="number" id="admFireRate" value="18"><button class="admin-btn" style="width:auto" data-apply="firerate">✓</button></div>
-    <div class="admin-row"><label>Alcance</label><input type="number" id="admRange" value="520"><button class="admin-btn" style="width:auto" data-apply="range">✓</button></div>
-    <div class="admin-row"><label>Perforación</label><input type="number" id="admPierce" value="3"><button class="admin-btn" style="width:auto" data-apply="pierce">✓</button></div>
-    <div class="admin-row"><label>Multishot</label><input type="number" id="admMultishot" value="1"><button class="admin-btn" style="width:auto" data-apply="multishot">✓</button></div>
+    <div class="admin-section-title">Tanques de Admin (exclusivos)</div>
+    <div id="adminTankList" style="display:flex;flex-wrap:wrap;"></div>
   </div>
   <div class="admin-section">
     <div class="admin-section-title">Trucos</div>
     <button class="admin-btn good" id="admLevelUp">⬆ Subir de nivel</button>
     <button class="admin-btn" id="admAddGems">💎 +100 gemas</button>
-    <button class="admin-btn" id="admUnlockAll">🔓 Desbloquear tanques</button>
+    <button class="admin-btn" id="admUnlockAll">🔓 Desbloquear todos</button>
     <button class="admin-btn" id="admGodMode">🛡️ Modo Dios</button>
     <button class="admin-btn danger" id="admReset">☠ Reiniciar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
-<div class="cards-overlay" id="cardsOverlay">
-  <div class="cards-container" id="cardsContainer"></div>
-</div>
 
 <script>
 // ==================== CONTRASEÑA ====================
@@ -438,11 +366,9 @@
   }
 
   function tryUnlock() {
-    const input = passwordInput.value.trim();
-    if (input === CORRECT_PASSWORD) {
-      lockError.textContent = '';
-      lockError.style.color = '#66ff88';
+    if (passwordInput.value.trim() === CORRECT_PASSWORD) {
       lockError.textContent = '✓ Acceso concedido';
+      lockError.style.color = '#66ff88';
       sessionStorage.setItem('railgun_auth', 'true');
       setTimeout(function() {
         lockScreen.classList.add('hidden');
@@ -450,8 +376,8 @@
         if (window.initGame) window.initGame();
       }, 300);
     } else {
-      lockError.style.color = '#ff6666';
       lockError.textContent = '✕ Contraseña incorrecta';
+      lockError.style.color = '#ff6666';
       passwordInput.value = '';
     }
   }
@@ -473,17 +399,14 @@ window.initGame = function() {
   const canvasContainer = document.getElementById('canvasContainer');
   const levelSpan = document.getElementById('levelDisplay');
   const gemDisplay = document.getElementById('gemDisplay');
-  const modeDisplay = document.getElementById('modeDisplay');
   const shopGemCount = document.getElementById('shopGemCount');
   const hpFillSpan = document.getElementById('hpFill');
-  const cardsOverlay = document.getElementById('cardsOverlay');
-  const cardsContainer = document.getElementById('cardsContainer');
   const restartBtn = document.getElementById('restartBtn');
   const soundToggle = document.getElementById('soundToggle');
   const adminToggle = document.getElementById('adminToggle');
   const adminPanel = document.getElementById('adminPanel');
   const adminClose = document.getElementById('adminClose');
-  const adminWeaponList = document.getElementById('adminWeaponList');
+  const adminTankList = document.getElementById('adminTankList');
   const shopBtn = document.getElementById('shopBtn');
   const shopModal = document.getElementById('shopModal');
   const shopGrid = document.getElementById('shopGrid');
@@ -497,31 +420,29 @@ window.initGame = function() {
   const chestModal = document.getElementById('chestModal');
   const chestOpening = document.getElementById('chestOpening');
   const toast = document.getElementById('toast');
-  const joystickZone = document.getElementById('joystickZone');
-  const joystickKnob = document.getElementById('joystickKnob');
-  const fireZone = document.getElementById('fireZone');
+  const joystickLeft = document.getElementById('joystickLeft');
+  const joystickRight = document.getElementById('joystickRight');
+  const knobLeft = document.getElementById('knobLeft');
+  const knobRight = document.getElementById('knobRight');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const upgradeBar = document.getElementById('upgradeBar');
 
   // ==================== GUARDADO ====================
-  const SAVE_KEY = 'railgun_save_v2';
+  const SAVE_KEY = 'railgun_save_v3';
   function loadSave() {
-    try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) { return null; }
+    try { const r = localStorage.getItem(SAVE_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; }
   }
   function saveGame() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
         gems, ownedTanks, adminUnlocked, currentTankKey, currentMode,
-        bestLevel, totalKills, timestamp: Date.now()
+        bestLevel, totalKills, upgrades
       }));
     } catch (e) {}
   }
 
   // ==================== RESIZE ====================
-  let W = 800, H = 600;
-  let MAP_W = 2400, MAP_H = 1600;
+  let W = 800, H = 600, MAP_W = 2400, MAP_H = 1600;
   let camera = { x: 0, y: 0 };
 
   function resizeCanvas() {
@@ -541,91 +462,102 @@ window.initGame = function() {
   // ==================== MÓVIL ====================
   const isMobile = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry/i.test(navigator.userAgent) || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
   if (isMobile) {
-    joystickZone.classList.add('active');
-    fireZone.classList.add('active');
+    joystickLeft.classList.add('active');
+    joystickRight.classList.add('active');
   }
 
-  // ==================== FULLSCREEN ====================
   fullscreenBtn.addEventListener('click', function() {
     const elem = document.documentElement;
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
       if (elem.requestFullscreen) elem.requestFullscreen();
       else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-      else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
     } else {
       if (document.exitFullscreen) document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
     }
   });
 
-  // ==================== TANQUES ====================
+  // ==================== TANQUES CON EVOLUCIÓN ====================
+  // Cada tanque tiene 'evolvesTo' para formar la rama de evolución
   const TANKS = {
-    base: { name: 'Base', icon: '🛡️', rarity: 'comun', desc: 'Estándar', levelReq: 0, stats: { hp: 100, speed: 4.5, damage: 1, range: 1, pierce: 1 } },
-    speedy: { name: 'Speedy', icon: '💨', rarity: 'raro', desc: '+30% vel', levelReq: 5, stats: { hp: 80, speed: 6.5, damage: 1, range: 1, pierce: 1 } },
-    heavy: { name: 'Heavy', icon: '🏰', rarity: 'raro', desc: '+50% HP', levelReq: 5, stats: { hp: 150, speed: 3, damage: 1, range: 1, pierce: 1 } },
-    destroyer: { name: 'Destroyer', icon: '💀', rarity: 'epico', desc: '+40% daño', levelReq: 10, stats: { hp: 110, speed: 4, damage: 1.4, range: 1.1, pierce: 1 } },
-    phantom: { name: 'Phantom', icon: '👻', rarity: 'epico', desc: '10% esquiva', levelReq: 10, stats: { hp: 90, speed: 5, damage: 1, range: 1, pierce: 1, dodge: 0.1 } },
-    titan: { name: 'Titan', icon: '🌋', rarity: 'legendario', desc: '+80% HP', levelReq: 15, stats: { hp: 180, speed: 3.5, damage: 1.2, range: 1.2, pierce: 2 } },
-    secret_void: { name: 'Vacío', icon: '🕳️', rarity: 'secreto', desc: '15% esquiva', levelReq: 15, stats: { hp: 120, speed: 5.5, damage: 1.6, range: 1.3, pierce: 3, dodge: 0.15 } },
-    exotic_rail: { name: 'Rail Exótico', icon: '⚡', rarity: 'exotico', desc: 'Perforación', levelReq: 20, stats: { hp: 130, speed: 4.2, damage: 1.8, range: 1.5, pierce: 5 } },
-    frost: { name: 'Frost', icon: '❄️', rarity: 'epico', desc: 'Congela', levelReq: 10, stats: { hp: 100, speed: 4.5, damage: 1.1, range: 1.2, pierce: 2 } },
-    lava: { name: 'Lava', icon: '🔥', rarity: 'legendario', desc: 'Quema', levelReq: 15, stats: { hp: 140, speed: 3.8, damage: 1.5, range: 1.1, pierce: 2 } },
-    plasma: { name: 'Plasma', icon: '🔮', rarity: 'exotico', desc: 'Rebota', levelReq: 20, stats: { hp: 120, speed: 4.5, damage: 1.7, range: 1.4, pierce: 4 } },
-    shadow: { name: 'Sombra', icon: '🌑', rarity: 'secreto', desc: '20% esquiva', levelReq: 20, stats: { hp: 90, speed: 6, damage: 1.5, range: 1.2, pierce: 2, dodge: 0.2 } },
-    mythic: { name: 'Mítico', icon: '🌟', rarity: 'mitico', desc: 'Todo +50%', levelReq: 25, stats: { hp: 200, speed: 6, damage: 2, range: 2, pierce: 6, dodge: 0.25 } }
+    base: { name: 'Base', icon: '🛡️', rarity: 'comun', levelReq: 0, evolvesTo: 'speedy', stats: { hp: 100, speed: 4.5, damage: 1, range: 1, pierce: 1, bodyDamage: 5, cooldown: 1 } },
+    speedy: { name: 'Speedy', icon: '💨', rarity: 'raro', levelReq: 5, evolvesTo: 'phantom', stats: { hp: 80, speed: 6.5, damage: 1, range: 1, pierce: 1, bodyDamage: 8, cooldown: 0.9 } },
+    phantom: { name: 'Phantom', icon: '👻', rarity: 'epico', levelReq: 10, evolvesTo: 'shadow', stats: { hp: 90, speed: 5.5, damage: 1, range: 1, pierce: 1, bodyDamage: 10, cooldown: 0.8, dodge: 0.1 } },
+    shadow: { name: 'Sombra', icon: '🌑', rarity: 'secreto', levelReq: 20, evolvesTo: 'mythic', stats: { hp: 90, speed: 6, damage: 1.5, range: 1.2, pierce: 2, bodyDamage: 15, cooldown: 0.7, dodge: 0.2 } },
+    mythic: { name: 'Mítico', icon: '🌟', rarity: 'mitico', levelReq: 25, evolvesTo: null, stats: { hp: 200, speed: 6, damage: 2, range: 2, pierce: 6, bodyDamage: 25, cooldown: 0.5, dodge: 0.25 } },
+    heavy: { name: 'Heavy', icon: '🏰', rarity: 'raro', levelReq: 5, evolvesTo: 'titan', stats: { hp: 150, speed: 3, damage: 1, range: 1, pierce: 1, bodyDamage: 12, cooldown: 1.2 } },
+    titan: { name: 'Titan', icon: '🌋', rarity: 'legendario', levelReq: 15, evolvesTo: null, stats: { hp: 180, speed: 3.5, damage: 1.2, range: 1.2, pierce: 2, bodyDamage: 20, cooldown: 1.1 } },
+    destroyer: { name: 'Destroyer', icon: '💀', rarity: 'epico', levelReq: 10, evolvesTo: 'exotic_rail', stats: { hp: 110, speed: 4, damage: 1.4, range: 1.1, pierce: 1, bodyDamage: 14, cooldown: 1 } },
+    exotic_rail: { name: 'Rail Exótico', icon: '⚡', rarity: 'exotico', levelReq: 20, evolvesTo: null, stats: { hp: 130, speed: 4.2, damage: 1.8, range: 1.5, pierce: 5, bodyDamage: 18, cooldown: 0.8 } },
+    frost: { name: 'Frost', icon: '❄️', rarity: 'epico', levelReq: 10, evolvesTo: 'lava', stats: { hp: 100, speed: 4.5, damage: 1.1, range: 1.2, pierce: 2, bodyDamage: 10, cooldown: 0.9 } },
+    lava: { name: 'Lava', icon: '🔥', rarity: 'legendario', levelReq: 15, evolvesTo: null, stats: { hp: 140, speed: 3.8, damage: 1.5, range: 1.1, pierce: 2, bodyDamage: 22, cooldown: 0.9 } },
+    plasma: { name: 'Plasma', icon: '🔮', rarity: 'exotico', levelReq: 20, evolvesTo: null, stats: { hp: 120, speed: 4.5, damage: 1.7, range: 1.4, pierce: 4, bodyDamage: 16, cooldown: 0.85 } },
+    // TANQUES DE ADMIN (exclusivos)
+    admin_god: { name: 'ADMIN DIOS', icon: '👑', rarity: 'admin', levelReq: 0, evolvesTo: null, adminOnly: true, stats: { hp: 500, speed: 8, damage: 5, range: 3, pierce: 10, bodyDamage: 100, cooldown: 0.3, dodge: 0.5 } },
+    admin_void: { name: 'ADMIN VACÍO', icon: '🕳️', rarity: 'admin', levelReq: 0, evolvesTo: null, adminOnly: true, stats: { hp: 300, speed: 10, damage: 4, range: 2.5, pierce: 8, bodyDamage: 60, cooldown: 0.4, dodge: 0.4 } },
+    admin_chaos: { name: 'ADMIN CAOS', icon: '💥', rarity: 'admin', levelReq: 0, evolvesTo: null, adminOnly: true, stats: { hp: 400, speed: 6, damage: 6, range: 2, pierce: 12, bodyDamage: 80, cooldown: 0.5 } }
   };
+
   let currentTankKey = 'base';
   let ownedTanks = { base: true };
   let bestLevel = 1;
   let totalKills = 0;
 
+  // ==================== RAILGUNS (VIA ÚNICA / DOBLE / TRIPLE) ====================
+  const RAILGUNS = {
+    single: { name: 'Railgun Simple', icon: '⚡', via: 1, color: '#7df9ff' },
+    double: { name: 'Railgun Doble', icon: '⚡⚡', via: 2, color: '#ff5c8a' },
+    triple: { name: 'Railgun Triple (SECRETO)', icon: '⚡⚡⚡', via: 3, color: '#ffd700' }
+  };
+  let currentRailgunKey = 'single';
+
   // ==================== MODOS ====================
   const MODES = {
-    survival: { name: 'Supervivencia', icon: '💀', desc: 'Sobrevive el mayor tiempo posible', spawnRate: 40, enemyHp: 1, enemySpeed: 1, maxEnemies: 30 },
-    waves: { name: 'Oleadas', icon: '🌊', desc: 'Oleadas cada vez más difíciles', spawnRate: 30, enemyHp: 1.2, enemySpeed: 1.1, maxEnemies: 25, waveMode: true },
-    boss: { name: 'Jefe', icon: '👹', desc: 'Derrota al jefe para ganar', spawnRate: 80, enemyHp: 1.5, enemySpeed: 0.9, maxEnemies: 15, bossMode: true },
-    endless: { name: 'Infinito', icon: '♾️', desc: 'Enemigos cada vez más fuertes', spawnRate: 25, enemyHp: 1.3, enemySpeed: 1.2, maxEnemies: 40 },
-    maze: { name: 'Laberinto', icon: '🧩', desc: 'Mapa con muchas paredes', spawnRate: 35, enemyHp: 1.1, enemySpeed: 1, maxEnemies: 25, mazeMode: true }
+    survival: { name: 'Supervivencia', icon: '💀', desc: 'Sobrevive', spawnRate: 45, enemyHp: 1, maxEnemies: 25, bots: 2 },
+    redVsBlue: { name: 'Rojo vs Azul', icon: '🔴🔵', desc: 'Equipos se pelean', spawnRate: 30, enemyHp: 1, maxEnemies: 20, teamMode: true },
+    boss: { name: 'Jefe', icon: '👹', desc: 'Derrota al jefe', spawnRate: 80, enemyHp: 1.5, maxEnemies: 15, bossMode: true, bots: 3 },
+    endless: { name: 'Infinito', icon: '♾️', desc: 'Sin fin', spawnRate: 30, enemyHp: 1.3, maxEnemies: 35, bots: 2 }
   };
   let currentMode = 'survival';
 
+  // ==================== SISTEMA DE MEJORAS ====================
+  // Cada mejora tiene nivel máximo, coste base y efecto
+  const UPGRADES_DEF = {
+    maxHp: { name: 'Vida', icon: '❤️', maxLevel: 10, costBase: 3, effect: '+15 HP máx' },
+    speed: { name: 'Velocidad', icon: '🏃', maxLevel: 10, costBase: 3, effect: '+0.5 vel' },
+    bodyDamage: { name: 'Daño corporal', icon: '💪', maxLevel: 10, costBase: 4, effect: '+5 daño cuerpo' },
+    fireRate: { name: 'Cadencia', icon: '⚡', maxLevel: 10, costBase: 4, effect: '-10% cooldown' },
+    damage: { name: 'Daño', icon: '🔥', maxLevel: 10, costBase: 5, effect: '+3 daño' },
+    healthRegen: { name: 'Regeneración', icon: '💚', maxLevel: 10, costBase: 3, effect: '+0.3 HP/s' },
+    bulletSpeed: { name: 'Vel. bala', icon: '💨', maxLevel: 5, costBase: 4, effect: '+15% vel bala' },
+    range: { name: 'Alcance', icon: '🎯', maxLevel: 10, costBase: 3, effect: '+50 alcance' },
+    pierce: { name: 'Perforación', icon: '🗡️', maxLevel: 5, costBase: 6, effect: '+1 perforación' }
+  };
+  let upgrades = {};
+  Object.keys(UPGRADES_DEF).forEach(function(k) { upgrades[k] = 0; });
+
+  function getUpgradeCost(key) {
+    const def = UPGRADES_DEF[key];
+    return def.costBase + upgrades[key] * 2;
+  }
+
   // ==================== COFRES ====================
   const CHESTS = [
-    { id: 'comun', name: 'Común', icon: '📦', price: 50, desc: 'Recompensas básicas',
-      drops: [
-        { type: 'gems', amount: 10, weight: 50 }, { type: 'gems', amount: 25, weight: 30 },
-        { type: 'tank', key: 'speedy', weight: 10 }, { type: 'tank', key: 'heavy', weight: 10 }
-      ] },
-    { id: 'raro', name: 'Raro', icon: '🎁', price: 150, desc: 'Mejores recompensas',
-      drops: [
-        { type: 'gems', amount: 50, weight: 40 }, { type: 'gems', amount: 100, weight: 20 },
-        { type: 'tank', key: 'destroyer', weight: 10 }, { type: 'tank', key: 'phantom', weight: 10 },
-        { type: 'tank', key: 'frost', weight: 10 }
-      ] },
-    { id: 'epico', name: 'Épico', icon: '💎', price: 400, desc: 'Tanques épicos',
-      drops: [
-        { type: 'gems', amount: 150, weight: 30 }, { type: 'gems', amount: 300, weight: 15 },
-        { type: 'tank', key: 'titan', weight: 15 }, { type: 'tank', key: 'secret_void', weight: 10 },
-        { type: 'tank', key: 'lava', weight: 15 }, { type: 'tank', key: 'frost', weight: 15 }
-      ] },
-    { id: 'legendario', name: 'Legendario', icon: '👑', price: 1000, desc: 'Recompensas legendarias',
-      drops: [
-        { type: 'gems', amount: 500, weight: 25 },
-        { type: 'tank', key: 'exotic_rail', weight: 25 },
-        { type: 'tank', key: 'plasma', weight: 20 },
-        { type: 'tank', key: 'shadow', weight: 15 },
-        { type: 'tank', key: 'mythic', weight: 15 }
-      ] }
+    { id: 'comun', name: 'Común', icon: '📦', price: 50,
+      drops: [{ type: 'tank', key: 'speedy', weight: 25 }, { type: 'tank', key: 'heavy', weight: 25 },
+              { type: 'gems', amount: 15, weight: 50 }] },
+    { id: 'raro', name: 'Raro', icon: '🎁', price: 150,
+      drops: [{ type: 'tank', key: 'destroyer', weight: 20 }, { type: 'tank', key: 'phantom', weight: 20 },
+              { type: 'tank', key: 'frost', weight: 20 }, { type: 'gems', amount: 80, weight: 40 }] },
+    { id: 'epico', name: 'Épico', icon: '💎', price: 400,
+      drops: [{ type: 'tank', key: 'titan', weight: 20 }, { type: 'tank', key: 'lava', weight: 20 },
+              { type: 'tank', key: 'secret_void', weight: 15 }, { type: 'tank', key: 'railgun_triple', weight: 5 },
+              { type: 'gems', amount: 200, weight: 40 }] },
+    { id: 'legendario', name: 'Legendario', icon: '👑', price: 1000,
+      drops: [{ type: 'tank', key: 'exotic_rail', weight: 20 }, { type: 'tank', key: 'plasma', weight: 20 },
+              { type: 'tank', key: 'mythic', weight: 20 }, { type: 'tank', key: 'railgun_triple', weight: 20 },
+              { type: 'gems', amount: 500, weight: 20 }] }
   ];
-
-  // ==================== ARMAS ====================
-  const WEAPONS = {
-    railgun: { name: 'Railgun', icon: '⚡', chargeTime: 20, cooldownMax: 18, rayDamage: 12, rayRange: 520, rayWidth: 10, pierce: 3, multishot: 1, spread: 0.10, color: '#7df9ff' },
-    pistol:  { name: 'Pistola', icon: '🔫', chargeTime: 4,  cooldownMax: 4,  rayDamage: 8,  rayRange: 380, rayWidth: 5,  pierce: 1, multishot: 1, spread: 0.03, color: '#ffe066' },
-    shotgun: { name: 'Escopeta', icon: '💥', chargeTime: 10, cooldownMax: 22, rayDamage: 6,  rayRange: 260, rayWidth: 4,  pierce: 1, multishot: 5, spread: 0.28, color: '#ff9a5c' },
-    sniper:  { name: 'Francotirador', icon: '🎯', chargeTime: 30, cooldownMax: 35, rayDamage: 40, rayRange: 900, rayWidth: 7, pierce: 6, multishot: 1, spread: 0, color: '#ff5c8a' }
-  };
-  let currentWeaponKey = 'railgun';
 
   // ==================== AUDIO ====================
   let audioCtx = null, soundEnabled = true, masterGain = null;
@@ -642,50 +574,25 @@ window.initGame = function() {
   }
   window.addEventListener('mousedown', initAudio, { passive: true });
   window.addEventListener('touchstart', initAudio, { passive: true });
-  window.addEventListener('keydown', initAudio, { passive: true });
 
-  function playTone(freq, duration, type, volume, slideTo) {
-    if (!soundEnabled || !audioCtx || !masterGain) return;
+  function playTone(freq, dur, type, vol, slide) {
+    if (!soundEnabled || !audioCtx) return;
     try {
       const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type || 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
-      gain.gain.setValueAtTime(volume || 0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      osc.connect(gain); gain.connect(masterGain);
-      osc.start(now); osc.stop(now + duration + 0.02);
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, now);
+      if (slide) o.frequency.exponentialRampToValueAtTime(slide, now + dur);
+      g.gain.setValueAtTime(vol || 0.15, now);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      o.connect(g); g.connect(masterGain);
+      o.start(now); o.stop(now + dur + 0.02);
     } catch (e) {}
   }
-  function playChargeSound() { playTone(80, 0.25, 'sawtooth', 0.12, 400); }
-  function playRailSound() { playTone(120, 0.35, 'sine', 0.5, 35); playTone(800, 0.3, 'sawtooth', 0.25, 60); }
-  function playPistolSound() { playTone(900, 0.08, 'square', 0.18, 200); }
-  function playShotgunSound() { playTone(200, 0.2, 'sawtooth', 0.25, 40); }
-  function playSniperSound() { playTone(1400, 0.15, 'square', 0.35, 100); playTone(180, 0.3, 'sine', 0.35, 40); }
-  function playWeaponSound(key) {
-    if (key === 'railgun') playRailSound();
-    else if (key === 'pistol') playPistolSound();
-    else if (key === 'shotgun') playShotgunSound();
-    else if (key === 'sniper') playSniperSound();
-  }
-  function playHitSound() { playTone(320, 0.06, 'square', 0.04, 200); }
-  function playEnemyDieSound() { playTone(180, 0.1, 'triangle', 0.1, 60); }
-  function playLevelUpSound() { playTone(523, 0.2, 'triangle', 0.1, 1046); }
-  function playHurtSound() { playTone(120, 0.15, 'sawtooth', 0.15, 60); }
-  function playGameOverSound() { playTone(300, 0.3, 'sawtooth', 0.15, 150); }
-  function playCardSelectSound() { playTone(880, 0.1, 'sine', 0.12, 1200); }
-  function playWeaponSwitchSound() { playTone(660, 0.08, 'sine', 0.1, 880); }
-  function playChestOpenSound() { playTone(400, 0.15, 'sine', 0.2, 800); setTimeout(function() { playTone(800, 0.2, 'sine', 0.2, 1200); }, 150); }
-  function playRewardSound() { playTone(523, 0.15, 'triangle', 0.15, 1046); setTimeout(function() { playTone(1046, 0.2, 'triangle', 0.15, 1568); }, 100); }
-  function playModeSelectSound() { playTone(440, 0.15, 'sine', 0.15, 880); }
 
-  soundToggle.addEventListener('click', function(e) {
-    e.stopPropagation();
+  soundToggle.addEventListener('click', function() {
     soundEnabled = !soundEnabled;
     soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
-    soundToggle.style.opacity = soundEnabled ? '1' : '0.5';
     if (soundEnabled) initAudio();
   });
 
@@ -699,20 +606,21 @@ window.initGame = function() {
   }
 
   // ==================== ESTADO ====================
-  let gems = 0;
-  let gameActive = true, level = 1, xp = 0, xpToNext = 5;
+  let gems = 0, xp = 0, xpToNext = 10, level = 1;
+  let gameActive = true;
   let player = null;
-  let enemies = [], particles = [], walls = [];
-  let enemySpawnTimer = 0, enemySpawnDelay = 40;
+  let enemies = [], bots = [], particles = [], walls = [], foodItems = [], projectiles = [];
+  let enemySpawnTimer = 0;
   let rayEffect = { active: false, timer: 0, duration: 8, rays: [], color: '#7df9ff' };
   let mouseX = 400, mouseY = 300, mouseDown = false;
   const keys = { w: false, a: false, s: false, d: false };
-  let godMode = false, regenAccumulator = 0;
+  let godMode = false, adminUnlocked = false;
+  let regenAccumulator = 0;
   const REGEN_INTERVAL = 60;
   let levelUpPending = false;
-  let adminUnlocked = false;
-  let waveNumber = 0, waveTimer = 0, betweenWaves = false;
-  let bossSpawned = false;
+  let aimAngleJoy = 0; // ángulo del joystick derecho para apuntar
+  let joystickRightActive = false;
+  let redTeamScore = 0, blueTeamScore = 0;
 
   let stars = [];
   function initStars() {
@@ -731,38 +639,29 @@ window.initGame = function() {
   // ==================== PAREDES ====================
   function generateWalls() {
     walls = [];
-    const isMaze = currentMode === 'maze';
-    const wallCount = isMaze ? 25 : 12;
-    for (let i = 0; i < wallCount; i++) {
-      let w, h, x, y, attempts = 0;
-      do {
-        w = 60 + Math.random() * 120;
-        h = 30 + Math.random() * 90;
-        x = 100 + Math.random() * (MAP_W - 200 - w);
-        y = 100 + Math.random() * (MAP_H - 200 - h);
-        attempts++;
-      } while (attempts < 15 && overlapsPlayerArea(x, y, w, h));
-      if (!overlapsPlayerArea(x, y, w, h)) {
-        walls.push({ x, y, w, h });
-      }
-    }
-    if (isMaze) {
-      const cellSize = 250;
-      for (let gx = cellSize; gx < MAP_W - cellSize; gx += cellSize) {
-        for (let gy = cellSize; gy < MAP_H - cellSize; gy += cellSize) {
-          if (Math.random() < 0.6) {
-            const orient = Math.random() < 0.5;
-            if (orient) walls.push({ x: gx, y: gy, w: 180, h: 20 });
-            else walls.push({ x: gx, y: gy, w: 20, h: 180 });
-          }
-        }
-      }
+    for (let i = 0; i < 15; i++) {
+      let w = 60 + Math.random() * 140;
+      let h = 30 + Math.random() * 100;
+      let x = 100 + Math.random() * (MAP_W - 200 - w);
+      let y = 100 + Math.random() * (MAP_H - 200 - h);
+      const px = MAP_W / 2, py = MAP_H / 2;
+      if (!(x > px + 130 || x + w < px - 130 || y > py + 130 || y + h < py - 130)) continue;
+      walls.push({ x, y, w, h });
     }
   }
 
-  function overlapsPlayerArea(x, y, w, h) {
-    const px = MAP_W / 2, py = MAP_H / 2;
-    return !(x > px + 120 || x + w < px - 120 || y > py + 120 || y + h < py - 120);
+  function generateFood() {
+    foodItems = [];
+    for (let i = 0; i < 60; i++) {
+      foodItems.push({
+        x: 100 + Math.random() * (MAP_W - 200),
+        y: 100 + Math.random() * (MAP_H - 200),
+        xpValue: 3 + Math.floor(Math.random() * 5),
+        radius: 6,
+        color: 'hsl(' + Math.random() * 60 + 40 + ', 90%, 60%)',
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
   }
 
   function rectCircleCollide(rx, ry, rw, rh, cx, cy, cr) {
@@ -776,14 +675,14 @@ window.initGame = function() {
     for (let i = 0; i < walls.length; i++) {
       const w = walls[i];
       if (rectCircleCollide(w.x, w.y, w.w, w.h, entity.x, entity.y, entity.radius)) {
-        const closestX = Math.max(w.x, Math.min(entity.x, w.x + w.w));
-        const closestY = Math.max(w.y, Math.min(entity.y, w.y + w.h));
-        const dx = entity.x - closestX, dy = entity.y - closestY;
+        const cx = Math.max(w.x, Math.min(entity.x, w.x + w.w));
+        const cy = Math.max(w.y, Math.min(entity.y, w.y + w.h));
+        const dx = entity.x - cx, dy = entity.y - cy;
         const dist = Math.hypot(dx, dy);
         if (dist > 0) {
-          const overlap = entity.radius - dist;
-          entity.x += (dx / dist) * overlap;
-          entity.y += (dy / dist) * overlap;
+          const ov = entity.radius - dist;
+          entity.x += (dx / dist) * ov;
+          entity.y += (dy / dist) * ov;
         }
       }
     }
@@ -791,289 +690,139 @@ window.initGame = function() {
 
   // ==================== JUGADOR ====================
   function createPlayer() {
-    const w = WEAPONS[currentWeaponKey];
     const tank = TANKS[currentTankKey];
-    const hp = Math.round(100 * (tank.stats.hp / 100));
+    const s = tank.stats;
     return {
       x: MAP_W / 2, y: MAP_H / 2, radius: 16,
-      hp: hp, maxHp: hp, speed: tank.stats.speed,
-      weaponKey: currentWeaponKey, tankKey: currentTankKey,
-      chargeTime: w.chargeTime, chargeTimer: 0, isCharging: false, chargeSoundPlayed: false,
-      rayDamage: Math.round(w.rayDamage * tank.stats.damage),
-      rayRange: Math.round(w.rayRange * tank.stats.range),
-      rayWidth: w.rayWidth, pierce: Math.round(w.pierce * tank.stats.pierce),
-      multishot: w.multishot, spread: w.spread,
-      cooldownMax: w.cooldownMax, cooldownTimer: 0,
-      regenPerSecond: 1, aimAngle: 0, recoil: 0, flash: 0,
-      dodge: tank.stats.dodge || 0
+      hp: Math.round(100 * (s.hp / 100) + upgrades.maxHp * 15),
+      maxHp: Math.round(100 * (s.hp / 100) + upgrades.maxHp * 15),
+      speed: s.speed + upgrades.speed * 0.5,
+      rayDamage: Math.round(12 * s.damage + upgrades.damage * 3),
+      rayRange: Math.round(520 * s.range + upgrades.range * 50),
+      rayWidth: 10,
+      pierce: Math.round(s.pierce + upgrades.pierce),
+      cooldownMax: Math.max(3, Math.round(18 * s.cooldown * (1 - upgrades.fireRate * 0.1))),
+      cooldownTimer: 0,
+      chargeTime: 18, chargeTimer: 0, isCharging: false, chargeSoundPlayed: false,
+      aimAngle: 0, recoil: 0, flash: 0,
+      regenPerSecond: 0.3 + upgrades.healthRegen * 0.3,
+      bodyDamage: s.bodyDamage + upgrades.bodyDamage * 5,
+      dodge: s.dodge || 0,
+      tankKey: currentTankKey,
+      railgunKey: currentRailgunKey
     };
-  }
-
-  function applyWeaponToPlayer(key) {
-    if (!player || !WEAPONS[key]) return;
-    const w = WEAPONS[key];
-    const tank = TANKS[player.tankKey];
-    currentWeaponKey = key;
-    player.weaponKey = key;
-    player.chargeTime = w.chargeTime; player.chargeTimer = 0; player.isCharging = false; player.chargeSoundPlayed = false;
-    player.rayDamage = Math.round(w.rayDamage * tank.stats.damage);
-    player.rayRange = Math.round(w.rayRange * tank.stats.range);
-    player.rayWidth = w.rayWidth; player.pierce = Math.round(w.pierce * tank.stats.pierce);
-    player.multishot = w.multishot; player.spread = w.spread;
-    player.cooldownMax = w.cooldownMax; player.cooldownTimer = 0;
-    playWeaponSwitchSound();
-    updateAdminWeaponButtons();
-    syncAdminInputs();
   }
 
   function applyTankToPlayer(key) {
     if (!player || !TANKS[key] || !ownedTanks[key]) return;
-    if (level < TANKS[key].levelReq) {
-      showToast('🔒 Necesitas nivel ' + TANKS[key].levelReq);
-      return;
-    }
-    const tank = TANKS[key];
-    const w = WEAPONS[player.weaponKey];
+    if (level < TANKS[key].levelReq) { showToast('🔒 Nivel ' + TANKS[key].levelReq); return; }
     currentTankKey = key;
-    player.tankKey = key;
-    player.maxHp = Math.round(100 * (tank.stats.hp / 100));
-    player.hp = Math.min(player.hp, player.maxHp);
-    player.speed = tank.stats.speed;
-    player.rayDamage = Math.round(w.rayDamage * tank.stats.damage);
-    player.rayRange = Math.round(w.rayRange * tank.stats.range);
-    player.pierce = Math.round(w.pierce * tank.stats.pierce);
-    player.dodge = tank.stats.dodge || 0;
-    playWeaponSwitchSound();
-    updateUI(); renderTanks();
+    const newP = createPlayer();
+    newP.x = player.x; newP.y = player.y;
+    player = newP;
+    showToast('🚀 ' + TANKS[key].name + ' equipado');
+    renderTanks();
+    updateUI();
     saveGame();
   }
 
-  // ==================== CONTROLES ====================
-  canvas.addEventListener('mousemove', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = (e.clientX - rect.left) * (W / rect.width);
-    mouseY = (e.clientY - rect.top) * (H / rect.height);
-  }, { passive: true });
-  canvas.addEventListener('mousedown', function() { mouseDown = true; initAudio(); });
-  canvas.addEventListener('mouseup', function() { mouseDown = false; });
-  canvas.addEventListener('mouseleave', function() { mouseDown = false; });
-  canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-
-  if (isMobile) {
-    let joystickActive = false, joystickStartX = 0, joystickStartY = 0;
-    const maxDist = 32;
-    joystickZone.addEventListener('touchstart', function(e) {
-      e.preventDefault(); joystickActive = true;
-      const touch = e.touches[0];
-      const rect = joystickZone.getBoundingClientRect();
-      joystickStartX = rect.left + rect.width / 2;
-      joystickStartY = rect.top + rect.height / 2;
-      updateJoystick(touch.clientX, touch.clientY);
-    }, { passive: false });
-    joystickZone.addEventListener('touchmove', function(e) {
-      e.preventDefault();
-      if (!joystickActive) return;
-      updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
-    joystickZone.addEventListener('touchend', function(e) {
-      e.preventDefault(); joystickActive = false;
-      joystickKnob.style.transform = 'translate(-50%, -50%)';
-      keys.w = keys.a = keys.s = keys.d = false;
-    }, { passive: false });
-    joystickZone.addEventListener('touchcancel', function() {
-      joystickActive = false;
-      joystickKnob.style.transform = 'translate(-50%, -50%)';
-      keys.w = keys.a = keys.s = keys.d = false;
-    }, { passive: false });
-    function updateJoystick(clientX, clientY) {
-      let dx = clientX - joystickStartX, dy = clientY - joystickStartY;
-      const dist = Math.hypot(dx, dy);
-      if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
-      joystickKnob.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
-      const dz = 10;
-      keys.a = dx < -dz; keys.d = dx > dz;
-      keys.w = dy < -dz; keys.s = dy > dz;
-    }
-    fireZone.addEventListener('touchstart', function(e) { e.preventDefault(); mouseDown = true; initAudio(); }, { passive: false });
-    fireZone.addEventListener('touchend', function(e) { e.preventDefault(); mouseDown = false; }, { passive: false });
-    fireZone.addEventListener('touchcancel', function() { mouseDown = false; }, { passive: false });
-    canvas.addEventListener('touchstart', function(e) {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      mouseX = (touch.clientX - rect.left) * (W / rect.width);
-      mouseY = (touch.clientY - rect.top) * (H / rect.height);
-    }, { passive: false });
-    canvas.addEventListener('touchmove', function(e) {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      mouseX = (touch.clientX - rect.left) * (W / rect.width);
-      mouseY = (touch.clientY - rect.top) * (H / rect.height);
-    }, { passive: false });
+  // ==================== BOTS ====================
+  function createBot(team) {
+    const teamColors = { red: '#ff4444', blue: '#4488ff' };
+    return {
+      x: 200 + Math.random() * (MAP_W - 400),
+      y: 200 + Math.random() * (MAP_H - 400),
+      radius: 14,
+      hp: 60, maxHp: 60,
+      speed: 2.5,
+      team: team,
+      color: teamColors[team],
+      aimAngle: Math.random() * Math.PI * 2,
+      cooldown: 30 + Math.random() * 30,
+      target: null,
+      isBot: true
+    };
   }
 
-  window.addEventListener('keydown', function(e) {
-    const k = e.key.toLowerCase();
-    if (k === 'w' || k === 'arrowup') { keys.w = true; e.preventDefault(); }
-    if (k === 'a' || k === 'arrowleft') { keys.a = true; e.preventDefault(); }
-    if (k === 's' || k === 'arrowdown') { keys.s = true; e.preventDefault(); }
-    if (k === 'd' || k === 'arrowright') { keys.d = true; e.preventDefault(); }
-    if (k === '1') applyWeaponToPlayer('railgun');
-    if (k === '2') applyWeaponToPlayer('pistol');
-    if (k === '3') applyWeaponToPlayer('shotgun');
-    if (k === '4') applyWeaponToPlayer('sniper');
-    if (k === 't') openTanks();
-    if (k === 'm') openModes();
-  });
-  window.addEventListener('keyup', function(e) {
-    const k = e.key.toLowerCase();
-    if (k === 'w' || k === 'arrowup') keys.w = false;
-    if (k === 'a' || k === 'arrowleft') keys.a = false;
-    if (k === 's' || k === 'arrowdown') keys.s = false;
-    if (k === 'd' || k === 'arrowright') keys.d = false;
-  });
-
-  restartBtn.addEventListener('click', function() { resetGame(); initAudio(); });
-
-  // ==================== UI ====================
-  function updateUI() {
-    levelSpan.textContent = level;
-    gemDisplay.textContent = gems;
-    shopGemCount.textContent = gems;
-    modeDisplay.textContent = MODES[currentMode].name;
-    tankLevelReq.textContent = Math.ceil(level / 5) * 5;
-    if (player) {
-      const hpPercent = Math.max(0, (player.hp / player.maxHp) * 100);
-      hpFillSpan.style.width = hpPercent + '%';
-    }
-    if (!adminUnlocked) adminToggle.classList.add('locked');
-    else adminToggle.classList.remove('locked');
-  }
-
-  function resetGame() {
-    gameActive = true; level = 1; xp = 0; xpToNext = 5;
-    enemies = []; particles = [];
-    enemySpawnTimer = 0;
-    enemySpawnDelay = MODES[currentMode].spawnRate;
-    rayEffect = { active: false, timer: 0, duration: 8, rays: [], color: '#7df9ff' };
-    currentWeaponKey = 'railgun'; currentTankKey = 'base';
-    waveNumber = 0; waveTimer = 0; betweenWaves = false; bossSpawned = false;
-    player = createPlayer();
-    godMode = false; regenAccumulator = 0; levelUpPending = false;
-    generateWalls();
-    cardsOverlay.classList.remove('active');
-    updateUI(); syncAdminInputs(); updateAdminWeaponButtons();
-    saveGame();
-  }
-
-  // ==================== CARTAS ====================
-  function showUpgradeCards() {
-    cardsOverlay.classList.add('active');
-    const all = [
-      { icon: '🔥', title: 'DAÑO +', desc: '+8 daño', apply: function() { player.rayDamage += 8; } },
-      { icon: '⚡', title: 'CARGA RÁPIDA', desc: '-4 frames', apply: function() { player.chargeTime = Math.max(4, player.chargeTime - 4); } },
-      { icon: '💥', title: 'MULTIDISPARO', desc: '+1 proyectil', apply: function() { player.multishot += 1; player.spread += 0.04; } },
-      { icon: '🛡️', title: 'VIDA +', desc: 'Cura 30', apply: function() { player.maxHp += 15; player.hp = Math.min(player.hp + 30, player.maxHp); } },
-      { icon: '🎯', title: 'PERFORACIÓN', desc: '+1 enemigo', apply: function() { player.pierce += 1; } },
-      { icon: '🌀', title: 'ALCANCE +', desc: '+100', apply: function() { player.rayRange += 100; } },
-      { icon: '🏃', title: 'VELOCIDAD', desc: '+1', apply: function() { player.speed += 1; } },
-      { icon: '⏳', title: 'RECARGA', desc: '-5 frames', apply: function() { player.cooldownMax = Math.max(4, player.cooldownMax - 5); } },
-      { icon: '💚', title: 'REGEN', desc: '+1 HP/s', apply: function() { player.regenPerSecond += 1; } }
-    ];
-    const shuffled = all.slice().sort(function() { return Math.random() - 0.5; });
-    const selected = shuffled.slice(0, 3);
-    cardsContainer.innerHTML = '';
-    selected.forEach(function(up) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = '<div class="icon">' + up.icon + '</div><div class="title">' + up.title + '</div><div class="desc">' + up.desc + '</div>';
-      card.addEventListener('click', function() {
-        playCardSelectSound(); up.apply();
-        cardsOverlay.classList.remove('active');
-        gameActive = true; levelUpPending = false;
-        enemySpawnDelay = Math.max(12, MODES[currentMode].spawnRate - level * 1.5);
-        updateUI(); syncAdminInputs();
-        saveGame();
-      });
-      cardsContainer.appendChild(card);
-    });
-  }
-
-  function requestLevelUp() {
-    if (levelUpPending || !gameActive) return;
-    levelUpPending = true; gameActive = false;
-    playLevelUpSound();
-    const oldLevel = level;
-    level++;
-    if (level > bestLevel) bestLevel = level;
-    xp = 0; xpToNext = Math.floor(5 + level * 2.5);
-    const gemReward = 5 + level * 2;
-    gems += gemReward;
-    showToast('⭐ Nivel ' + level + ' · +' + gemReward + ' gemas');
-    if (Math.floor(level / 5) > Math.floor(oldLevel / 5)) {
-      const unlockedTanks = [];
-      Object.keys(TANKS).forEach(function(key) {
-        const t = TANKS[key];
-        if (t.levelReq > 0 && t.levelReq <= level && !ownedTanks[key]) {
-          ownedTanks[key] = true;
-          unlockedTanks.push(t.name);
-        }
-      });
-      if (unlockedTanks.length > 0) {
-        showToast('🎁 ¡' + unlockedTanks.join(', ') + ' desbloqueado(s)!');
+  function spawnBotsForMode() {
+    bots = [];
+    const mode = MODES[currentMode];
+    if (mode.teamMode) {
+      for (let i = 0; i < 4; i++) bots.push(createBot('red'));
+      for (let i = 0; i < 4; i++) bots.push(createBot('blue'));
+    } else if (mode.bots) {
+      for (let i = 0; i < mode.bots; i++) {
+        bots.push(createBot(Math.random() < 0.5 ? 'red' : 'blue'));
       }
     }
-    updateUI(); saveGame();
-    requestAnimationFrame(function() { showUpgradeCards(); });
   }
 
-  // ==================== ENEMIGOS ====================
-  function spawnEnemy() {
-    const mode = MODES[currentMode];
-    if (enemies.length >= mode.maxEnemies) return;
-    const side = Math.floor(Math.random() * 4);
-    let x, y;
-    const margin = 50;
-    if (side === 0) { x = Math.random() * MAP_W; y = -margin; }
-    else if (side === 1) { x = MAP_W + margin; y = Math.random() * MAP_H; }
-    else if (side === 2) { x = Math.random() * MAP_W; y = MAP_H + margin; }
-    else { x = -margin; y = Math.random() * MAP_H; }
-    const baseHp = (15 + level * 4) * mode.enemyHp;
-    enemies.push({
-      x: x, y: y, radius: 14 + Math.random() * 6,
-      hp: baseHp, maxHp: baseHp,
-      speed: (1.2 + Math.random() * 0.8 + level * 0.15) * mode.enemySpeed,
-      color: 'hsl(' + (Math.random() * 20 + 340) + ', 80%, 60%)',
-      wobble: Math.random() * Math.PI * 2, angle: 0,
-      frozen: 0, isBoss: false
-    });
-  }
+  function updateBots() {
+    for (let i = 0; i < bots.length; i++) {
+      const bot = bots[i];
+      // Buscar objetivo: enemigos, jugador o bots enemigos
+      let closestDist = Infinity, target = null;
+      // Enemigos siempre son objetivo
+      for (let j = 0; j < enemies.length; j++) {
+        const e = enemies[j];
+        const d = Math.hypot(e.x - bot.x, e.y - bot.y);
+        if (d < closestDist) { closestDist = d; target = e; }
+      }
+      // Bots de otro equipo
+      for (let j = 0; j < bots.length; j++) {
+        if (i === j) continue;
+        if (bots[j].team !== bot.team && bots[j].hp > 0) {
+          const d = Math.hypot(bots[j].x - bot.x, bots[j].y - bot.y);
+          if (d < closestDist) { closestDist = d; target = bots[j]; }
+        }
+      }
+      // Jugador (en modo team, solo si es de otro equipo, aquí jugador es azul por defecto)
+      if (bot.team === 'red' && player) {
+        const d = Math.hypot(player.x - bot.x, player.y - bot.y);
+        if (d < closestDist) { closestDist = d; target = player; }
+      }
 
-  function spawnBoss() {
-    const bossHp = 500 + level * 50;
-    enemies.push({
-      x: MAP_W / 2, y: -100, radius: 45,
-      hp: bossHp, maxHp: bossHp, speed: 1.5,
-      color: '#ff3344', wobble: 0, angle: 0,
-      frozen: 0, isBoss: true
-    });
-    showToast('👹 ¡JEFE APARECIDO!');
-    bossSpawned = true;
-  }
-
-  function addHitParticles(x, y, color, count) {
-    count = count || 6;
-    if (particles.length > 250) return;
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6,
-        life: 1.0, color: color || '#ffaa66', size: 2.5 + Math.random() * 4
-      });
+      if (target) {
+        const dx = target.x - bot.x, dy = target.y - bot.y;
+        const dist = Math.hypot(dx, dy);
+        bot.aimAngle = Math.atan2(dy, dx);
+        // Moverse hacia el objetivo si está lejos
+        if (dist > 200) {
+          bot.x += (dx / dist) * bot.speed;
+          bot.y += (dy / dist) * bot.speed;
+        } else if (dist < 150) {
+          bot.x -= (dx / dist) * bot.speed * 0.5;
+          bot.y -= (dy / dist) * bot.speed * 0.5;
+        }
+        // Disparar
+        if (bot.cooldown <= 0 && dist < 400) {
+          bot.cooldown = 30;
+          fireBotProjectile(bot);
+        }
+      } else {
+        // Movimiento aleatorio
+        bot.aimAngle += (Math.random() - 0.5) * 0.2;
+        bot.x += Math.cos(bot.aimAngle) * bot.speed * 0.5;
+        bot.y += Math.sin(bot.aimAngle) * bot.speed * 0.5;
+      }
+      if (bot.cooldown > 0) bot.cooldown--;
+      resolveWallCollision(bot);
+      bot.x = Math.max(bot.radius, Math.min(MAP_W - bot.radius, bot.x));
+      bot.y = Math.max(bot.radius, Math.min(MAP_H - bot.radius, bot.y));
     }
   }
 
-  // ==================== DISPARO ====================
+  function fireBotProjectile(bot) {
+    projectiles.push({
+      x: bot.x, y: bot.y,
+      vx: Math.cos(bot.aimAngle) * 7,
+      vy: Math.sin(bot.aimAngle) * 7,
+      radius: 4, damage: 10, team: bot.team,
+      color: bot.color, life: 60
+    });
+  }
+
+  // ==================== DISPARO DEL JUGADOR ====================
   function pointSegmentDistance(px, py, x1, y1, x2, y2) {
     const dx = x2 - x1, dy = y2 - y1;
     const lenSq = dx * dx + dy * dy;
@@ -1088,8 +837,8 @@ window.initGame = function() {
     let minT = 1;
     for (let i = 0; i < walls.length; i++) {
       const wall = walls[i];
-      for (let step = 0; step <= 30; step++) {
-        const t = step / 30;
+      for (let step = 0; step <= 20; step++) {
+        const t = step / 20;
         const px = x1 + (endX - x1) * t;
         const py = y1 + (endY - y1) * t;
         if (px > wall.x && px < wall.x + wall.w && py > wall.y && py < wall.y + wall.h) {
@@ -1101,60 +850,62 @@ window.initGame = function() {
     return { x: x1 + (endX - x1) * minT, y: y1 + (endY - y1) * minT };
   }
 
-  function fireWeapon() {
+  function fireRailgun() {
     if (!gameActive) return;
-    playWeaponSound(player.weaponKey);
+    const r = RAILGUNS[currentRailgunKey];
+    playTone(120, 0.35, 'sine', 0.5, 35);
+    playTone(800, 0.3, 'sawtooth', 0.25, 60);
     player.recoil = 6; player.flash = 6;
-    const baseAngle = Math.atan2(mouseY + camera.y - player.y, mouseX + camera.x - player.x);
-    const hitEnemies = []; const rays = [];
-    const wColor = WEAPONS[player.weaponKey].color;
-    for (let s = 0; s < player.multishot; s++) {
+
+    const baseAngle = joystickRightActive ? aimAngleJoy : Math.atan2(mouseY + camera.y - player.y, mouseX + camera.x - player.x);
+    const hitEnemies = [];
+    const rays = [];
+    const viaCount = r.via;
+    const spread = viaCount > 1 ? 0.15 : 0;
+
+    for (let s = 0; s < viaCount; s++) {
       let offset = 0;
-      if (player.multishot > 1) {
-        const totalSpread = player.spread * (player.multishot - 1);
-        offset = -totalSpread / 2 + (s * player.spread);
-      }
+      if (viaCount > 1) offset = -spread / 2 + (s * spread / (viaCount - 1));
       rays.push(baseAngle + offset);
     }
-    rayEffect = { active: true, timer: rayEffect.duration, duration: rayEffect.duration, rays: rays, color: wColor };
-    for (let s = 0; s < player.multishot; s++) {
+    rayEffect = { active: true, timer: 8, duration: 8, rays: rays, color: r.color };
+
+    for (let s = 0; s < viaCount; s++) {
       let offset = 0;
-      if (player.multishot > 1) {
-        const totalSpread = player.spread * (player.multishot - 1);
-        offset = -totalSpread / 2 + (s * player.spread);
-      }
+      if (viaCount > 1) offset = -spread / 2 + (s * spread / (viaCount - 1));
       const angle = baseAngle + offset;
       const rayEnd = getRayEndWithWalls(player.x, player.y, angle, player.rayRange);
-      const endX = rayEnd.x, endY = rayEnd.y;
       let pierceLeft = player.pierce;
       const candidates = [];
       for (let i = 0; i < enemies.length; i++) {
         const e = enemies[i];
-        if (pointSegmentDistance(e.x, e.y, player.x, player.y, endX, endY) < e.radius + player.rayWidth / 2) {
-          candidates.push({ enemy: e, d: Math.hypot(e.x - player.x, e.y - player.y) });
+        if (pointSegmentDistance(e.x, e.y, player.x, player.y, rayEnd.x, rayEnd.y) < e.radius + player.rayWidth / 2) {
+          candidates.push({ target: e, d: Math.hypot(e.x - player.x, e.y - player.y), type: 'enemy' });
+        }
+      }
+      for (let i = 0; i < bots.length; i++) {
+        const b = bots[i];
+        if (b.hp <= 0) continue;
+        // Solo disparar a bots de otro equipo (jugador es azul)
+        if (b.team === 'red' && pointSegmentDistance(b.x, b.y, player.x, player.y, rayEnd.x, rayEnd.y) < b.radius + player.rayWidth / 2) {
+          candidates.push({ target: b, d: Math.hypot(b.x - player.x, b.y - player.y), type: 'bot' });
         }
       }
       candidates.sort(function(a, b) { return a.d - b.d; });
       for (let c = 0; c < candidates.length; c++) {
         if (pierceLeft <= 0) break;
-        const e = candidates[c].enemy;
-        if (hitEnemies.indexOf(e) !== -1) continue;
-        hitEnemies.push(e);
-        e.hp -= player.rayDamage;
-        addHitParticles(e.x, e.y, wColor, 5);
-        playHitSound();
-        if (e.hp <= 0) {
-          const idx = enemies.indexOf(e);
-          if (idx !== -1) enemies.splice(idx, 1);
-          xp++; totalKills++;
-          if (Math.random() < 0.15) gems += 1;
-          addHitParticles(e.x, e.y, '#ffaa66', 10);
-          playEnemyDieSound();
-          if (e.isBoss) {
-            showToast('👹 ¡JEFE DERROTADO! +500 gemas');
-            gems += 500; saveGame();
+        const cand = candidates[c];
+        if (hitEnemies.indexOf(cand.target) !== -1) continue;
+        hitEnemies.push(cand.target);
+        cand.target.hp -= player.rayDamage;
+        addHitParticles(cand.target.x, cand.target.y, r.color, 4);
+        if (cand.target.hp <= 0) {
+          if (cand.type === 'enemy') {
+            const idx = enemies.indexOf(cand.target);
+            if (idx !== -1) enemies.splice(idx, 1);
+            xp += 2; totalKills++;
           }
-          if (xp >= xpToNext && !levelUpPending) { requestLevelUp(); return; }
+          addHitParticles(cand.target.x, cand.target.y, '#ffaa66', 10);
         }
         pierceLeft--;
       }
@@ -1164,28 +915,40 @@ window.initGame = function() {
   // ==================== UPDATE ====================
   function update() {
     if (!gameActive || !player) return;
+
+    // Movimiento
     let dx = 0, dy = 0;
     if (keys.w) dy -= 1; if (keys.s) dy += 1;
     if (keys.a) dx -= 1; if (keys.d) dx += 1;
     if (dx !== 0 || dy !== 0) {
       const len = Math.hypot(dx, dy);
       dx /= len; dy /= len;
-      player.x += dx * player.speed; player.y += dy * player.speed;
+      player.x += dx * player.speed;
+      player.y += dy * player.speed;
     }
     resolveWallCollision(player);
     player.x = Math.max(player.radius, Math.min(MAP_W - player.radius, player.x));
     player.y = Math.max(player.radius, Math.min(MAP_H - player.radius, player.y));
+
+    // Cámara
     camera.x = Math.max(0, Math.min(MAP_W - W, player.x - W / 2));
     camera.y = Math.max(0, Math.min(MAP_H - H, player.y - H / 2));
 
-    const targetAngle = Math.atan2(mouseY + camera.y - player.y, mouseX + camera.x - player.x);
+    // Ángulo
+    let targetAngle;
+    if (joystickRightActive) {
+      targetAngle = aimAngleJoy;
+    } else {
+      targetAngle = Math.atan2(mouseY + camera.y - player.y, mouseX + camera.x - player.x);
+    }
     let diff = targetAngle - player.aimAngle;
     while (diff > Math.PI) diff -= Math.PI * 2;
     while (diff < -Math.PI) diff += Math.PI * 2;
-    player.aimAngle += diff * 0.25;
+    player.aimAngle += diff * 0.3;
     if (player.recoil > 0) player.recoil *= 0.85;
     if (player.flash > 0) player.flash--;
 
+    // Regen
     if (player.regenPerSecond > 0 && player.hp < player.maxHp) {
       regenAccumulator++;
       if (regenAccumulator >= REGEN_INTERVAL) {
@@ -1193,48 +956,40 @@ window.initGame = function() {
         player.hp = Math.min(player.maxHp, player.hp + player.regenPerSecond);
         updateUI();
       }
-    } else regenAccumulator = 0;
+    }
 
+    // Disparo automático con joystick derecho o clic
+    const shouldFire = joystickRightActive || mouseDown;
     if (player.cooldownTimer > 0) {
-      player.cooldownTimer--; player.isCharging = false; player.chargeTimer = 0; player.chargeSoundPlayed = false;
-    } else if (mouseDown) {
-      if (!player.isCharging) { player.isCharging = true; player.chargeTimer = 0; player.chargeSoundPlayed = false; }
+      player.cooldownTimer--;
+      player.isCharging = false; player.chargeTimer = 0;
+    } else if (shouldFire) {
+      if (!player.isCharging) { player.isCharging = true; player.chargeTimer = 0; }
       player.chargeTimer++;
-      if (!player.chargeSoundPlayed && player.chargeTimer === 1) { playChargeSound(); player.chargeSoundPlayed = true; }
       if (player.chargeTimer >= player.chargeTime) {
-        fireWeapon();
+        fireRailgun();
         player.chargeTimer = 0; player.isCharging = false;
-        player.cooldownTimer = player.cooldownMax; player.chargeSoundPlayed = false;
-        if (!gameActive) return;
+        player.cooldownTimer = player.cooldownMax;
       }
-    } else { player.isCharging = false; player.chargeTimer = 0; player.chargeSoundPlayed = false; }
+    } else {
+      player.isCharging = false; player.chargeTimer = 0;
+    }
 
     if (rayEffect.active) { rayEffect.timer--; if (rayEffect.timer <= 0) rayEffect.active = false; }
 
-    const mode = MODES[currentMode];
-    if (mode.bossMode) {
-      if (!bossSpawned && enemies.length < 5) spawnBoss();
-    } else if (mode.waveMode) {
-      if (betweenWaves) {
-        waveTimer--;
-        if (waveTimer <= 0) {
-          betweenWaves = false; waveNumber++;
-          showToast('🌊 Oleada ' + waveNumber);
-          for (let i = 0; i < 5 + waveNumber * 2; i++) spawnEnemy();
-        }
-      } else {
-        if (enemies.length === 0) { betweenWaves = true; waveTimer = 120; }
-      }
-    } else {
-      enemySpawnTimer++;
-      if (enemySpawnTimer >= enemySpawnDelay) {
-        enemySpawnTimer = 0; spawnEnemy();
-      }
+    // Spawn enemigos
+    enemySpawnTimer++;
+    if (enemySpawnTimer >= MODES[currentMode].spawnRate) {
+      enemySpawnTimer = 0;
+      if (enemies.length < MODES[currentMode].maxEnemies) spawnEnemy();
     }
 
+    // Bots
+    updateBots();
+
+    // Enemigos
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i];
-      if (e.frozen > 0) { e.frozen--; continue; }
       const edx = player.x - e.x, edy = player.y - e.y;
       const dist = Math.hypot(edx, edy);
       if (dist > 1) {
@@ -1242,36 +997,135 @@ window.initGame = function() {
         e.x += (edx / dist) * move; e.y += (edy / dist) * move;
       }
       resolveWallCollision(e);
-      e.wobble += 0.08; e.angle = Math.atan2(edy, edx);
       if (dist < player.radius + e.radius) {
-        if (player.dodge > 0 && Math.random() < player.dodge) {
-          addHitParticles(e.x, e.y, '#c77dff', 6); enemies.splice(i, 1); continue;
+        if (!godMode) {
+          player.hp -= 8;
+          e.hp -= player.bodyDamage;
+          if (e.hp <= 0) { enemies.splice(i, 1); xp += 2; totalKills++; }
+          updateUI();
         }
-        if (!godMode) { player.hp -= e.isBoss ? 20 : 8; playHurtSound(); updateUI(); }
-        addHitParticles(e.x, e.y, '#ff5555', 6);
-        if (!e.isBoss) enemies.splice(i, 1);
-        if (!godMode && player.hp <= 0) {
-          player.hp = 0; updateUI(); gameActive = false;
-          playGameOverSound(); saveGame();
-          setTimeout(function() {
-            alert('💀 Has caído.\nNivel: ' + level + '\nMejor: ' + bestLevel + '\nBajas: ' + totalKills);
-            resetGame();
-          }, 400);
-          return;
-        }
-        continue;
-      }
-      if (e.x < -200 || e.x > MAP_W + 200 || e.y < -200 || e.y > MAP_H + 200) {
-        if (!e.isBoss) enemies.splice(i, 1);
+        if (!godMode && player.hp <= 0) { gameOver(); return; }
       }
     }
 
+    // Proyectiles de bots
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+      const p = projectiles[i];
+      p.x += p.vx; p.y += p.vy; p.life--;
+      if (p.life <= 0) { projectiles.splice(i, 1); continue; }
+      // Colisión con paredes
+      for (let w = 0; w < walls.length; w++) {
+        const wall = walls[w];
+        if (p.x > wall.x && p.x < wall.x + wall.w && p.y > wall.y && p.y < wall.y + wall.h) {
+          projectiles.splice(i, 1); break;
+        }
+      }
+      // Colisión con jugador (si es de otro equipo)
+      if (p.team === 'red' && Math.hypot(p.x - player.x, p.y - player.y) < player.radius + p.radius) {
+        if (!godMode) { player.hp -= p.damage; updateUI(); }
+        projectiles.splice(i, 1);
+        if (!godMode && player.hp <= 0) { gameOver(); return; }
+        continue;
+      }
+      // Colisión con bots enemigos
+      for (let b = 0; b < bots.length; b++) {
+        if (bots[b].team !== p.team && Math.hypot(p.x - bots[b].x, p.y - bots[b].y) < bots[b].radius + p.radius) {
+          bots[b].hp -= p.damage;
+          projectiles.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    // Comida (XP)
+    for (let i = foodItems.length - 1; i >= 0; i--) {
+      const f = foodItems[i];
+      f.pulse += 0.1;
+      if (Math.hypot(f.x - player.x, f.y - player.y) < player.radius + f.radius + 5) {
+        xp += f.xpValue;
+        addHitParticles(f.x, f.y, f.color, 4);
+        foodItems.splice(i, 1);
+        // Regenerar comida
+        setTimeout(function() {
+          foodItems.push({
+            x: 100 + Math.random() * (MAP_W - 200),
+            y: 100 + Math.random() * (MAP_H - 200),
+            xpValue: 3 + Math.floor(Math.random() * 5),
+            radius: 6, color: 'hsl(' + Math.random() * 60 + 40 + ', 90%, 60%)',
+            pulse: Math.random() * Math.PI * 2
+          });
+        }, 3000);
+      }
+    }
+
+    // Level up
+    if (xp >= xpToNext && !levelUpPending) {
+      levelUpPending = true;
+      level++;
+      xp = 0;
+      xpToNext = Math.floor(10 + level * 3);
+      gems += 3;
+      showToast('⭐ ¡Nivel ' + level + '! +3 gemas');
+      // Desbloqueo de tanques por evolución
+      Object.keys(TANKS).forEach(function(k) {
+        const t = TANKS[k];
+        if (!t.adminOnly && t.levelReq > 0 && t.levelReq <= level && !ownedTanks[k]) {
+          ownedTanks[k] = true;
+          showToast('🎁 ¡' + t.name + ' desbloqueado!');
+        }
+      });
+      updateUI();
+      setTimeout(function() { levelUpPending = false; }, 1000);
+      saveGame();
+    }
+
+    // Partículas
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.022;
       if (p.life <= 0) particles.splice(i, 1);
     }
     for (let i = 0; i < stars.length; i++) stars[i].twinkle += stars[i].speed;
+  }
+
+  function gameOver() {
+    player.hp = 0;
+    gameActive = false;
+    playTone(300, 0.3, 'sawtooth', 0.15, 150);
+    saveGame();
+    setTimeout(function() {
+      alert('💀 Has caído.\nNivel: ' + level + '\nBajas: ' + totalKills);
+      resetGame();
+    }, 400);
+  }
+
+  // ==================== ENEMIGOS ====================
+  function spawnEnemy() {
+    const side = Math.floor(Math.random() * 4);
+    let x, y;
+    const margin = 50;
+    if (side === 0) { x = Math.random() * MAP_W; y = -margin; }
+    else if (side === 1) { x = MAP_W + margin; y = Math.random() * MAP_H; }
+    else if (side === 2) { x = Math.random() * MAP_W; y = MAP_H + margin; }
+    else { x = -margin; y = Math.random() * MAP_H; }
+    const hp = (15 + level * 4) * MODES[currentMode].enemyHp;
+    enemies.push({
+      x, y, radius: 14 + Math.random() * 6,
+      hp, maxHp: hp,
+      speed: 1.2 + Math.random() * 0.8 + level * 0.1,
+      color: 'hsl(' + (Math.random() * 20 + 340) + ', 80%, 60%)'
+    });
+  }
+
+  function addHitParticles(x, y, color, count) {
+    count = count || 5;
+    if (particles.length > 250) return;
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6,
+        life: 1.0, color: color || '#ffaa66', size: 2.5 + Math.random() * 3
+      });
+    }
   }
 
   // ==================== DRAW ====================
@@ -1283,6 +1137,7 @@ window.initGame = function() {
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
+    // Estrellas
     for (let i = 0; i < stars.length; i++) {
       const s = stars[i];
       ctx.globalAlpha = s.alpha * (0.6 + 0.4 * Math.sin(s.twinkle));
@@ -1291,64 +1146,88 @@ window.initGame = function() {
     }
     ctx.globalAlpha = 1;
 
+    // Rejilla
     ctx.strokeStyle = 'rgba(60, 110, 180, 0.06)'; ctx.lineWidth = 1;
     for (let x = 0; x < MAP_W; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_H); ctx.stroke(); }
     for (let y = 0; y < MAP_H; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_W, y); ctx.stroke(); }
 
+    // Borde
     ctx.strokeStyle = 'rgba(100, 160, 255, 0.3)'; ctx.lineWidth = 4;
     ctx.strokeRect(0, 0, MAP_W, MAP_H);
 
+    // Paredes
     for (let i = 0; i < walls.length; i++) {
       const w = walls[i];
       const grad = ctx.createLinearGradient(w.x, w.y, w.x, w.y + w.h);
       grad.addColorStop(0, '#2a3a5a'); grad.addColorStop(1, '#1a2a4a');
-      ctx.fillStyle = grad;
-      ctx.fillRect(w.x, w.y, w.w, w.h);
+      ctx.fillStyle = grad; ctx.fillRect(w.x, w.y, w.w, w.h);
       ctx.strokeStyle = 'rgba(100, 180, 255, 0.4)'; ctx.lineWidth = 2;
       ctx.strokeRect(w.x, w.y, w.w, w.h);
-      ctx.fillStyle = 'rgba(150, 200, 255, 0.15)';
-      ctx.fillRect(w.x, w.y, w.w, 3);
     }
 
-    if (!player) { ctx.restore(); return; }
+    // Comida
+    for (let i = 0; i < foodItems.length; i++) {
+      const f = foodItems[i];
+      const s = f.radius + Math.sin(f.pulse) * 1.5;
+      ctx.beginPath(); ctx.arc(f.x, f.y, s, 0, Math.PI * 2);
+      ctx.fillStyle = f.color;
+      ctx.shadowBlur = 10; ctx.shadowColor = f.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
 
+    // Enemigos
     for (let i = 0; i < enemies.length; i++) {
       const e = enemies[i];
-      ctx.save();
-      ctx.shadowColor = e.isBoss ? 'rgba(255, 0, 0, 0.8)' : 'rgba(255, 40, 60, 0.5)';
-      ctx.shadowBlur = e.isBoss ? 40 : 20;
       const eg = ctx.createRadialGradient(e.x - e.radius * 0.3, e.y - e.radius * 0.3, 2, e.x, e.y, e.radius);
-      if (e.frozen > 0) {
-        eg.addColorStop(0, '#aaddff'); eg.addColorStop(0.7, '#4d9fdf'); eg.addColorStop(1, '#1a4a7a');
-      } else if (e.isBoss) {
-        eg.addColorStop(0, '#ff6b6b'); eg.addColorStop(0.7, '#cc0000'); eg.addColorStop(1, '#4a0000');
-      } else {
-        eg.addColorStop(0, '#ff6b8a'); eg.addColorStop(0.7, e.color); eg.addColorStop(1, '#5a0a1a');
-      }
+      eg.addColorStop(0, '#ff6b8a'); eg.addColorStop(0.7, e.color); eg.addColorStop(1, '#5a0a1a');
       ctx.beginPath(); ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2); ctx.fillStyle = eg; ctx.fill();
-      ctx.strokeStyle = e.isBoss ? '#ff4444' : 'rgba(255, 120, 150, 0.8)';
-      ctx.lineWidth = e.isBoss ? 3 : 1.5; ctx.stroke();
-      const eyeOffset = e.radius * 0.35;
-      ctx.beginPath(); ctx.arc(e.x - eyeOffset, e.y - 2, 2, 0, Math.PI * 2);
-      ctx.arc(e.x + eyeOffset, e.y - 2, 2, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffddaa'; ctx.fill();
-      ctx.restore();
+      ctx.strokeStyle = 'rgba(255, 120, 150, 0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
       const hpPct = e.hp / e.maxHp;
-      const barW = e.isBoss ? 80 : 38, barH = 6;
-      const bx = e.x - barW / 2, by = e.y - e.radius - 16;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)'; ctx.fillRect(bx - 1, by - 1, barW + 2, barH + 2);
+      const bx = e.x - 18, by = e.y - e.radius - 14;
+      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bx - 1, by - 1, 38, 6);
       ctx.fillStyle = hpPct > 0.6 ? '#3aff7a' : (hpPct > 0.25 ? '#ffbb33' : '#ff3344');
-      ctx.fillRect(bx, by, barW * hpPct, barH);
+      ctx.fillRect(bx, by, 36 * hpPct, 4);
     }
 
+    // Bots
+    for (let i = 0; i < bots.length; i++) {
+      const b = bots[i];
+      if (b.hp <= 0) continue;
+      ctx.save();
+      ctx.shadowBlur = 15; ctx.shadowColor = b.color;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fillStyle = b.color; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+      // Cañón
+      const bx = b.x + Math.cos(b.aimAngle) * (b.radius + 8);
+      const by = b.y + Math.sin(b.aimAngle) * (b.radius + 8);
+      ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(bx, by);
+      ctx.strokeStyle = '#aaccff'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.restore();
+      // Barra HP
+      const hpPct = b.hp / b.maxHp;
+      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36, 5);
+      ctx.fillStyle = b.color; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36 * hpPct, 5);
+    }
+
+    // Proyectiles
+    for (let i = 0; i < projectiles.length; i++) {
+      const p = projectiles[i];
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color; ctx.shadowBlur = 10; ctx.shadowColor = p.color;
+      ctx.fill(); ctx.shadowBlur = 0;
+    }
+
+    // Partículas
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
       ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
-      ctx.shadowBlur = 10; ctx.shadowColor = p.color;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
 
+    // Rayo
     if (rayEffect.active) {
       const t = rayEffect.timer / rayEffect.duration;
       const alpha = Math.min(1, t * 1.8);
@@ -1356,337 +1235,410 @@ window.initGame = function() {
       for (let r = 0; r < rayEffect.rays.length; r++) {
         const angle = rayEffect.rays[r];
         const rayEnd = getRayEndWithWalls(player.x, player.y, angle, player.rayRange);
-        const endX = rayEnd.x, endY = rayEnd.y;
         ctx.save();
         ctx.globalAlpha = alpha * 0.3; ctx.strokeStyle = color;
         ctx.lineWidth = player.rayWidth * 2 * (0.5 + 0.5 * t);
         ctx.lineCap = 'round'; ctx.shadowBlur = 30; ctx.shadowColor = color;
-        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(endX, endY); ctx.stroke();
-        ctx.globalAlpha = alpha * 0.8; ctx.lineWidth = player.rayWidth * (0.7 + 0.3 * t);
-        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(endX, endY); ctx.stroke();
-        ctx.globalAlpha = alpha; ctx.strokeStyle = '#ffffff';
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(rayEnd.x, rayEnd.y); ctx.stroke();
+        ctx.globalAlpha = alpha; ctx.strokeStyle = '#fff';
         ctx.lineWidth = Math.max(1.5, player.rayWidth / 2.5 * t);
-        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(endX, endY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(rayEnd.x, rayEnd.y); ctx.stroke();
         ctx.restore();
       }
     }
 
-    if (player.isCharging && player.cooldownTimer <= 0) {
-      const progress = player.chargeTimer / player.chargeTime;
-      const r = player.radius + 14;
+    // Jugador
+    if (player) {
       ctx.save();
-      ctx.beginPath(); ctx.arc(player.x, player.y, r, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(40, 80, 120, 0.4)'; ctx.lineWidth = 4; ctx.stroke();
-      ctx.beginPath(); ctx.arc(player.x, player.y, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
-      ctx.strokeStyle = '#4df0ff'; ctx.lineWidth = 4; ctx.lineCap = 'round';
-      ctx.shadowBlur = 15; ctx.shadowColor = '#4df0ff'; ctx.stroke();
+      ctx.shadowColor = godMode ? '#ffdd00' : (player.tankKey.startsWith('admin') ? '#ff0000' : '#2ad4ff');
+      ctx.shadowBlur = 25;
+      const pg = ctx.createRadialGradient(player.x - 5, player.y - 5, 2, player.x, player.y, player.radius);
+      pg.addColorStop(0, '#8fdcff');
+      pg.addColorStop(0.5, godMode ? '#ffcc33' : (player.tankKey.startsWith('admin') ? '#ff4444' : '#2b8cff'));
+      pg.addColorStop(1, '#0a2a5a');
+      ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+      ctx.fillStyle = pg; ctx.fill();
+      ctx.strokeStyle = godMode ? '#ffe680' : '#7dd4ff'; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.restore();
-    }
 
-    ctx.save();
-    ctx.shadowColor = godMode ? '#ffdd00' : '#2ad4ff'; ctx.shadowBlur = 25;
-    const pg = ctx.createRadialGradient(player.x - 5, player.y - 5, 2, player.x, player.y, player.radius);
-    pg.addColorStop(0, '#8fdcff'); pg.addColorStop(0.5, godMode ? '#ffcc33' : '#2b8cff'); pg.addColorStop(1, '#0a2a5a');
-    ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2); ctx.fillStyle = pg; ctx.fill();
-    ctx.strokeStyle = godMode ? '#ffe680' : '#7dd4ff'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.restore();
-
-    const recoilOffset = player.recoil;
-    const ang = player.aimAngle;
-    const barrelLen = player.radius + 16 - recoilOffset;
-    const tipX = player.x + Math.cos(ang) * barrelLen;
-    const tipY = player.y + Math.sin(ang) * barrelLen;
-    ctx.save();
-    ctx.shadowBlur = 15; ctx.shadowColor = player.isCharging ? '#ffdd66' : '#aae0ff';
-    ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(tipX, tipY);
-    ctx.lineWidth = 10; ctx.strokeStyle = '#1a3a6a'; ctx.lineCap = 'round'; ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(tipX, tipY);
-    ctx.lineWidth = 4; ctx.strokeStyle = player.isCharging ? '#ffdd66' : '#7dd4ff'; ctx.stroke();
-    ctx.restore();
-
-    if (player.flash > 0) {
-      ctx.save(); ctx.globalAlpha = player.flash / 6;
-      ctx.beginPath(); ctx.arc(tipX, tipY, 16, 0, Math.PI * 2);
-      const fg = ctx.createRadialGradient(tipX, tipY, 2, tipX, tipY, 16);
-      fg.addColorStop(0, '#ffffff'); fg.addColorStop(1, 'rgba(120, 240, 255, 0)');
-      ctx.fillStyle = fg; ctx.fill(); ctx.restore();
-    }
-
-    if (godMode) {
-      ctx.save(); ctx.beginPath(); ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 220, 0, 0.5)'; ctx.lineWidth = 2;
-      ctx.shadowBlur = 25; ctx.shadowColor = '#ffdd00'; ctx.stroke(); ctx.restore();
-    }
-
-    if (!isMobile) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; ctx.lineWidth = 1.5;
-      ctx.shadowBlur = 6; ctx.shadowColor = '#4df0ff';
-      const mwx = mouseX + camera.x, mwy = mouseY + camera.y;
-      ctx.beginPath(); ctx.arc(mwx, mwy, 8, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(mwx - 14, mwy); ctx.lineTo(mwx - 4, mwy);
-      ctx.moveTo(mwx + 4, mwy); ctx.lineTo(mwx + 14, mwy);
-      ctx.moveTo(mwx, mwy - 14); ctx.lineTo(mwx, mwy - 4);
-      ctx.moveTo(mwx, mwy + 4); ctx.lineTo(mwx, mwy + 14);
-      ctx.stroke(); ctx.restore();
+      // Cañón
+      const ang = player.aimAngle;
+      const tipX = player.x + Math.cos(ang) * (player.radius + 14 - player.recoil);
+      const tipY = player.y + Math.sin(ang) * (player.radius + 14 - player.recoil);
+      ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(tipX, tipY);
+      ctx.lineWidth = 8; ctx.strokeStyle = '#1a3a6a'; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(tipX, tipY);
+      ctx.lineWidth = 3; ctx.strokeStyle = player.isCharging ? '#ffdd66' : '#7dd4ff'; ctx.stroke();
     }
 
     ctx.restore();
 
-    // HUD de pantalla
-    ctx.font = 'bold 11px "Segoe UI", monospace'; ctx.textAlign = 'center';
-    ctx.shadowBlur = 8;
-    const px = player.x - camera.x, py = player.y - camera.y;
-    if (player.cooldownTimer > 0) {
-      ctx.fillStyle = '#ff8888'; ctx.fillText('RECARGANDO', px, py - player.radius - 20);
-    } else if (player.isCharging) {
-      ctx.fillStyle = '#66ddff'; ctx.fillText('CARGANDO...', px, py - player.radius - 20);
-    } else {
-      ctx.fillStyle = '#88aadd'; ctx.fillText('LISTO', px, py - player.radius - 20);
+    // HUD
+    if (player) {
+      ctx.font = 'bold 10px "Segoe UI", monospace'; ctx.textAlign = 'center';
+      const px = player.x - camera.x, py = player.y - camera.y;
+      ctx.fillStyle = '#88aadd';
+      ctx.fillText(RAILGUNS[currentRailgunKey].name, px, py - player.radius - 18);
     }
-    ctx.shadowBlur = 0;
 
+    // Barra XP
     const xpPct = xp / xpToNext;
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(8, H - 16, W - 16, 8);
-    const xpGrad = ctx.createLinearGradient(8, 0, W - 8, 0);
-    xpGrad.addColorStop(0, '#3a8eff'); xpGrad.addColorStop(1, '#7df9ff');
-    ctx.fillStyle = xpGrad; ctx.fillRect(8, H - 16, (W - 16) * xpPct, 8);
-    ctx.strokeStyle = 'rgba(120, 180, 255, 0.4)'; ctx.lineWidth = 1; ctx.strokeRect(8, H - 16, W - 16, 8);
-    ctx.font = 'bold 8px "Segoe UI", monospace'; ctx.fillStyle = '#b8d4ff';
-    ctx.fillText('XP ' + xp + ' / ' + xpToNext, W / 2, H - 8);
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(8, H - 14, W - 16, 7);
+    const xg = ctx.createLinearGradient(8, 0, W - 8, 0);
+    xg.addColorStop(0, '#3a8eff'); xg.addColorStop(1, '#7df9ff');
+    ctx.fillStyle = xg; ctx.fillRect(8, H - 14, (W - 16) * xpPct, 7);
+    ctx.strokeStyle = 'rgba(120, 180, 255, 0.4)'; ctx.lineWidth = 1; ctx.strokeRect(8, H - 14, W - 16, 7);
+    ctx.font = 'bold 7px "Segoe UI", monospace'; ctx.fillStyle = '#b8d4ff';
+    ctx.fillText('XP ' + xp + '/' + xpToNext, W / 2, H - 7);
 
     drawMinimap();
   }
 
   function drawMinimap() {
     mctx.clearRect(0, 0, 130, 130);
-    mctx.fillStyle = 'rgba(5, 10, 18, 0.8)';
-    mctx.fillRect(0, 0, 130, 130);
-    const scaleX = 130 / MAP_W, scaleY = 130 / MAP_H;
+    mctx.fillStyle = 'rgba(5, 10, 18, 0.8)'; mctx.fillRect(0, 0, 130, 130);
+    const sx = 130 / MAP_W, sy = 130 / MAP_H;
     mctx.fillStyle = 'rgba(60, 100, 160, 0.6)';
-    for (let i = 0; i < walls.length; i++) {
-      const w = walls[i];
-      mctx.fillRect(w.x * scaleX, w.y * scaleY, w.w * scaleX, w.h * scaleY);
-    }
-    for (let i = 0; i < enemies.length; i++) {
-      const e = enemies[i];
-      mctx.fillStyle = e.isBoss ? '#ff4444' : '#ff6688';
-      mctx.beginPath();
-      mctx.arc(e.x * scaleX, e.y * scaleY, e.isBoss ? 3 : 1.5, 0, Math.PI * 2);
-      mctx.fill();
+    for (let i = 0; i < walls.length; i++) mctx.fillRect(walls[i].x * sx, walls[i].y * sy, walls[i].w * sx, walls[i].h * sy);
+    mctx.fillStyle = 'rgba(255, 200, 50, 0.6)';
+    for (let i = 0; i < foodItems.length; i++) mctx.fillRect(foodItems[i].x * sx - 1, foodItems[i].y * sy - 1, 2, 2);
+    mctx.fillStyle = '#ff6688';
+    for (let i = 0; i < enemies.length; i++) mctx.fillRect(enemies[i].x * sx - 1, enemies[i].y * sy - 1, 2, 2);
+    for (let i = 0; i < bots.length; i++) {
+      mctx.fillStyle = bots[i].color;
+      mctx.beginPath(); mctx.arc(bots[i].x * sx, bots[i].y * sy, 2, 0, Math.PI * 2); mctx.fill();
     }
     if (player) {
       mctx.fillStyle = '#4df0ff';
-      mctx.beginPath();
-      mctx.arc(player.x * scaleX, player.y * scaleY, 2.5, 0, Math.PI * 2);
-      mctx.fill();
-      mctx.strokeStyle = 'rgba(120, 200, 255, 0.5)';
-      mctx.lineWidth = 1;
-      mctx.strokeRect(camera.x * scaleX, camera.y * scaleY, W * scaleX, H * scaleY);
+      mctx.beginPath(); mctx.arc(player.x * sx, player.y * sy, 2.5, 0, Math.PI * 2); mctx.fill();
     }
-    mctx.strokeStyle = 'rgba(100, 180, 255, 0.4)';
-    mctx.lineWidth = 1;
-    mctx.strokeRect(0, 0, 130, 130);
+    mctx.strokeStyle = 'rgba(100, 180, 255, 0.4)'; mctx.lineWidth = 1; mctx.strokeRect(0, 0, 130, 130);
   }
 
-  // ==================== TIENDA ====================
-  function openShop() { shopModal.classList.add('open'); renderShop(); updateUI(); }
-  function renderShop() {
-    shopGrid.innerHTML = '';
-    CHESTS.forEach(function(chest) {
-      const canAfford = gems >= chest.price;
-      const card = document.createElement('div');
-      card.className = 'chest-card' + (canAfford ? '' : ' locked');
-      card.innerHTML = '<div class="chest-icon">' + chest.icon + '</div><div class="chest-name">' + chest.name + '</div><div class="chest-desc">' + chest.desc + '</div><div class="chest-price">' + chest.price + '</div>';
-      card.addEventListener('click', function() {
-        if (canAfford) buyChest(chest);
-        else showToast('💎 Faltan gemas');
-      });
-      shopGrid.appendChild(card);
-    });
-  }
-  function buyChest(chest) {
-    if (gems < chest.price) { showToast('💎 Faltan gemas'); return; }
-    gems -= chest.price; updateUI();
-    shopModal.classList.remove('open'); openChest(chest);
-  }
-  function openChest(chest) {
-    chestModal.classList.add('open');
-    chestOpening.innerHTML = '<div class="big-icon">' + chest.icon + '</div><div style="color:#97b9e0;margin-top:0.6rem;font-size:0.85rem;">Abriendo ' + chest.name + '...</div>';
-    playChestOpenSound();
-    setTimeout(function() {
-      const totalWeight = chest.drops.reduce(function(s, d) { return s + d.weight; }, 0);
-      let roll = Math.random() * totalWeight;
-      let drop = chest.drops[0];
-      for (let i = 0; i < chest.drops.length; i++) {
-        roll -= chest.drops[i].weight;
-        if (roll <= 0) { drop = chest.drops[i]; break; }
-      }
-      let rewardHTML = '';
-      if (drop.type === 'gems') {
-        gems += drop.amount;
-        rewardHTML = '<div class="big-icon">💎</div><div class="reward-display">+' + drop.amount + ' GEMAS</div>';
-        showToast('💎 +' + drop.amount + ' gemas');
-      } else if (drop.type === 'tank') {
-        const tank = TANKS[drop.key];
-        if (!ownedTanks[drop.key]) {
-          ownedTanks[drop.key] = true;
-          rewardHTML = '<div class="big-icon">' + tank.icon + '</div><div class="reward-display" style="color:' + getRarityColor(tank.rarity) + '">¡' + tank.name + '!</div><div class="reward-sub">' + tank.rarity.toUpperCase() + ' · Nv. ' + tank.levelReq + '</div>';
-          showToast('🎉 ¡' + tank.name + ' desbloqueado!');
-        } else {
-          const comp = 30; gems += comp;
-          rewardHTML = '<div class="big-icon">💎</div><div class="reward-display">Repetido</div><div class="reward-sub">+' + comp + ' gemas</div>';
-          showToast('💎 +' + comp + ' gemas');
-        }
-      }
-      chestOpening.innerHTML = rewardHTML + '<button class="admin-btn good" style="margin-top:1rem;width:auto;padding:0.4rem 1.2rem;" id="chestAccept">✓ Aceptar</button>';
-      playRewardSound(); updateUI(); saveGame();
-      document.getElementById('chestAccept').addEventListener('click', function() { chestModal.classList.remove('open'); });
-    }, 1000);
-  }
-  function getRarityColor(rarity) {
-    const colors = { comun: '#8a9ab0', raro: '#5f9eff', epico: '#c77dff', legendario: '#ffd966', secreto: '#ff5c8a', exotico: '#4dffb8', mitico: '#ff4dff' };
-    return colors[rarity] || '#fff';
+  // ==================== UI ====================
+  function updateUI() {
+    levelSpan.textContent = level;
+    gemDisplay.textContent = gems;
+    shopGemCount.textContent = gems;
+    if (player) {
+      hpFillSpan.style.width = Math.max(0, (player.hp / player.maxHp) * 100) + '%';
+    }
   }
 
-  shopBtn.addEventListener('click', openShop);
-  document.querySelectorAll('[data-close]').forEach(function(btn) {
-    btn.addEventListener('click', function() { document.getElementById(btn.getAttribute('data-close')).classList.remove('open'); });
-  });
-  shopModal.addEventListener('click', function(e) { if (e.target === shopModal) shopModal.classList.remove('open'); });
-  tanksModal.addEventListener('click', function(e) { if (e.target === tanksModal) tanksModal.classList.remove('open'); });
-  modesModal.addEventListener('click', function(e) { if (e.target === modesModal) modesModal.classList.remove('open'); });
-  chestModal.addEventListener('click', function(e) { if (e.target === chestModal) chestModal.classList.remove('open'); });
+  function resetGame() {
+    gameActive = true; level = 1; xp = 0; xpToNext = 10;
+    enemies = []; bots = []; particles = []; projectiles = [];
+    player = createPlayer();
+    godMode = false; regenAccumulator = 0; levelUpPending = false;
+    generateWalls(); generateFood(); spawnBotsForMode();
+    updateUI(); renderUpgrades();
+    saveGame();
+  }
 
-  // ==================== TANQUES ====================
-  function openTanks() { tanksModal.classList.add('open'); renderTanks(); }
+  // ==================== RENDER TANQUES ====================
   function renderTanks() {
     tanksGrid.innerHTML = '';
-    tankLevelReq.textContent = Math.ceil(level / 5) * 5;
+    tankLevelReq.textContent = level;
     Object.keys(TANKS).forEach(function(key) {
-      const tank = TANKS[key];
-      const owned = ownedTanks[key];
-      const levelOk = level >= tank.levelReq;
+      const t = TANKS[key];
+      if (t.adminOnly && !adminUnlocked) return;
+      const owned = ownedTanks[key] || t.adminOnly;
+      const levelOk = level >= t.levelReq;
       const active = currentTankKey === key;
       const card = document.createElement('div');
       card.className = 'tank-card' + (active ? ' active' : '') + ((!owned || !levelOk) ? ' locked' : '');
       card.innerHTML =
         ((!owned || !levelOk) ? '<div class="tank-lock">🔒</div>' : '') +
-        '<div class="tank-icon">' + tank.icon + '</div>' +
-        '<div class="tank-name">' + tank.name + '</div>' +
-        '<div class="tank-rarity rarity-' + tank.rarity + '">' + tank.rarity + '</div>' +
-        '<div class="tank-level">Nv. ' + tank.levelReq + '</div>';
+        '<div class="tank-icon">' + t.icon + '</div>' +
+        '<div class="tank-name">' + t.name + '</div>' +
+        '<div class="tank-rarity rarity-' + t.rarity + '">' + t.rarity + '</div>' +
+        '<div class="tank-level">Nv. ' + t.levelReq + '</div>';
       card.addEventListener('click', function() {
         if (!owned) { showToast('🔒 Consíguelo en cofres'); return; }
-        if (!levelOk) { showToast('🔒 Necesitas nivel ' + tank.levelReq); return; }
-        applyTankToPlayer(key); renderTanks();
+        if (!levelOk) { showToast('🔒 Nivel ' + t.levelReq); return; }
+        applyTankToPlayer(key);
       });
       tanksGrid.appendChild(card);
     });
   }
 
-  // ==================== MODOS ====================
-  function openModes() { modesModal.classList.add('open'); renderModes(); }
+  // ==================== RENDER MODOS ====================
   function renderModes() {
     modesGrid.innerHTML = '';
     Object.keys(MODES).forEach(function(key) {
-      const mode = MODES[key];
+      const m = MODES[key];
       const active = currentMode === key;
       const card = document.createElement('div');
       card.className = 'mode-card' + (active ? ' active' : '');
-      card.innerHTML = '<div class="mode-icon">' + mode.icon + '</div><div class="mode-name">' + mode.name + '</div><div class="mode-desc">' + mode.desc + '</div>';
+      card.innerHTML = '<div class="mode-icon">' + m.icon + '</div><div class="mode-name">' + m.name + '</div><div class="mode-desc">' + m.desc + '</div>';
       card.addEventListener('click', function() {
         currentMode = key;
-        playModeSelectSound();
         modesModal.classList.remove('open');
         resetGame();
-        showToast('🎮 ' + mode.name);
-        saveGame();
+        showToast('🎮 ' + m.name);
       });
       modesGrid.appendChild(card);
     });
   }
-  modesBtn.addEventListener('click', openModes);
+
+  // ==================== RENDER COFRES ====================
+  function renderShop() {
+    shopGrid.innerHTML = '';
+    CHESTS.forEach(function(c) {
+      const canAfford = gems >= c.price;
+      const card = document.createElement('div');
+      card.className = 'chest-card' + (canAfford ? '' : ' locked');
+      card.innerHTML = '<div class="chest-icon">' + c.icon + '</div><div class="chest-name">' + c.name + '</div><div class="chest-price">' + c.price + '</div>';
+      card.addEventListener('click', function() {
+        if (canAfford) buyChest(c);
+        else showToast('💎 Faltan gemas');
+      });
+      shopGrid.appendChild(card);
+    });
+  }
+
+  function buyChest(chest) {
+    if (gems < chest.price) return;
+    gems -= chest.price; updateUI();
+    shopModal.classList.remove('open'); openChest(chest);
+  }
+
+  function openChest(chest) {
+    chestModal.classList.add('open');
+    chestOpening.innerHTML = '<div class="big-icon">' + chest.icon + '</div><div style="color:#97b9e0;margin-top:0.6rem;font-size:0.85rem;">Abriendo...</div>';
+    setTimeout(function() {
+      const total = chest.drops.reduce(function(s, d) { return s + d.weight; }, 0);
+      let roll = Math.random() * total;
+      let drop = chest.drops[0];
+      for (let i = 0; i < chest.drops.length; i++) {
+        roll -= chest.drops[i].weight;
+        if (roll <= 0) { drop = chest.drops[i]; break; }
+      }
+      let html = '';
+      if (drop.type === 'gems') {
+        gems += drop.amount;
+        html = '<div class="big-icon">💎</div><div class="reward-display">+' + drop.amount + ' GEMAS</div>';
+      } else if (drop.type === 'tank') {
+        if (drop.key === 'railgun_triple') {
+          if (!ownedTanks.railgun_triple) {
+            ownedTanks.railgun_triple = true;
+            currentRailgunKey = 'triple';
+            html = '<div class="big-icon">⚡⚡⚡</div><div class="reward-display" style="color:#ffd700">¡RAILGUN TRIPLE!</div><div class="reward-sub">Secreto desbloqueado</div>';
+          } else {
+            gems += 100;
+            html = '<div class="big-icon">💎</div><div class="reward-display">+100 gemas</div>';
+          }
+        } else {
+          const t = TANKS[drop.key];
+          if (t && !ownedTanks[drop.key]) {
+            ownedTanks[drop.key] = true;
+            html = '<div class="big-icon">' + t.icon + '</div><div class="reward-display">¡' + t.name + '!</div><div class="reward-sub">' + t.rarity.toUpperCase() + '</div>';
+          } else {
+            gems += 30;
+            html = '<div class="big-icon">💎</div><div class="reward-display">Repetido +30</div>';
+          }
+        }
+      }
+      chestOpening.innerHTML = html + '<button class="admin-btn good" style="margin-top:1rem;width:auto;padding:0.4rem 1.2rem;" id="chestAccept">✓</button>';
+      playTone(523, 0.15, 'triangle', 0.15, 1046);
+      updateUI(); saveGame();
+      document.getElementById('chestAccept').addEventListener('click', function() { chestModal.classList.remove('open'); });
+    }, 1000);
+  }
+
+  // ==================== RENDER MEJORAS ====================
+  function renderUpgrades() {
+    upgradeBar.innerHTML = '';
+    Object.keys(UPGRADES_DEF).forEach(function(key) {
+      const def = UPGRADES_DEF[key];
+      const lvl = upgrades[key];
+      const maxed = lvl >= def.maxLevel;
+      const cost = getUpgradeCost(key);
+      const btn = document.createElement('div');
+      btn.className = 'upgrade-btn' + (maxed ? ' maxed' : '');
+      btn.innerHTML = '<div class="upg-icon">' + def.icon + '</div><div class="upg-cost">' + (maxed ? 'MAX' : cost) + '</div>';
+      btn.title = def.name + ' · ' + def.effect + ' · Nivel ' + lvl + '/' + def.maxLevel;
+      btn.addEventListener('click', function() {
+        if (maxed) { showToast('Máximo alcanzado'); return; }
+        if (gems < cost) { showToast('💎 Necesitas ' + cost + ' gemas'); return; }
+        gems -= cost;
+        upgrades[key]++;
+        updateUI(); renderUpgrades();
+        // Recalcular stats del jugador
+        const newP = createPlayer();
+        newP.x = player.x; newP.y = player.y; newP.hp = Math.min(player.hp, newP.maxHp);
+        player = newP;
+        showToast('✅ ' + def.name + ' mejorado');
+        saveGame();
+      });
+      upgradeBar.appendChild(btn);
+    });
+  }
+
+  // ==================== JOYSTICKS ====================
+  function setupJoystick(zone, knob, onMove, onEnd) {
+    let active = false, startX = 0, startY = 0;
+    const maxDist = 32;
+    zone.addEventListener('touchstart', function(e) {
+      e.preventDefault(); active = true;
+      const t = e.touches[0];
+      const r = zone.getBoundingClientRect();
+      startX = r.left + r.width / 2;
+      startY = r.top + r.height / 2;
+      handleMove(t.clientX, t.clientY);
+    }, { passive: false });
+    zone.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+      if (!active) return;
+      handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+    zone.addEventListener('touchend', function(e) {
+      e.preventDefault(); active = false;
+      knob.style.transform = 'translate(-50%, -50%)';
+      onEnd();
+    }, { passive: false });
+    zone.addEventListener('touchcancel', function() {
+      active = false;
+      knob.style.transform = 'translate(-50%, -50%)';
+      onEnd();
+    }, { passive: false });
+    function handleMove(cx, cy) {
+      let dx = cx - startX, dy = cy - startY;
+      const d = Math.hypot(dx, dy);
+      if (d > maxDist) { dx = (dx / d) * maxDist; dy = (dy / d) * maxDist; }
+      knob.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
+      onMove(dx, dy);
+    }
+  }
+
+  // Joystick izquierdo: movimiento
+  setupJoystick(joystickLeft, knobLeft, function(dx, dy) {
+    const dz = 10;
+    keys.a = dx < -dz; keys.d = dx > dz;
+    keys.w = dy < -dz; keys.s = dy > dz;
+  }, function() {
+    keys.a = keys.d = keys.w = keys.s = false;
+  });
+
+  // Joystick derecho: apuntar y disparar
+  setupJoystick(joystickRight, knobRight, function(dx, dy) {
+    if (Math.hypot(dx, dy) > 10) {
+      joystickRightActive = true;
+      aimAngleJoy = Math.atan2(dy, dx);
+    }
+  }, function() {
+    joystickRightActive = false;
+  });
+
+  // PC: clic para disparar
+  canvas.addEventListener('mousemove', function(e) {
+    const r = canvas.getBoundingClientRect();
+    mouseX = (e.clientX - r.left) * (W / r.width);
+    mouseY = (e.clientY - r.top) * (H / r.height);
+  });
+  canvas.addEventListener('mousedown', function() { mouseDown = true; initAudio(); });
+  canvas.addEventListener('mouseup', function() { mouseDown = false; });
+  canvas.addEventListener('mouseleave', function() { mouseDown = false; });
+  canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+  window.addEventListener('keydown', function(e) {
+    const k = e.key.toLowerCase();
+    if (k === 'w' || k === 'arrowup') keys.w = true;
+    if (k === 'a' || k === 'arrowleft') keys.a = true;
+    if (k === 's' || k === 'arrowdown') keys.s = true;
+    if (k === 'd' || k === 'arrowright') keys.d = true;
+  });
+  window.addEventListener('keyup', function(e) {
+    const k = e.key.toLowerCase();
+    if (k === 'w' || k === 'arrowup') keys.w = false;
+    if (k === 'a' || k === 'arrowleft') keys.a = false;
+    if (k === 's' || k === 'arrowdown') keys.s = false;
+    if (k === 'd' || k === 'arrowright') keys.d = false;
+  });
+
+  // ==================== BOTONES HUD ====================
+  restartBtn.addEventListener('click', function() { resetGame(); });
+  shopBtn.addEventListener('click', function() { shopModal.classList.add('open'); renderShop(); });
+  tanksBtn.addEventListener('click', function() { tanksModal.classList.add('open'); renderTanks(); });
+  modesBtn.addEventListener('click', function() { modesModal.classList.add('open'); renderModes(); });
+  document.querySelectorAll('[data-close]').forEach(function(btn) {
+    btn.addEventListener('click', function() { document.getElementById(btn.getAttribute('data-close')).classList.remove('open'); });
+  });
+  [shopModal, tanksModal, modesModal, chestModal].forEach(function(m) {
+    m.addEventListener('click', function(e) { if (e.target === m) m.classList.remove('open'); });
+  });
 
   // ==================== ADMIN ====================
-  adminToggle.addEventListener('click', function(e) {
-    e.stopPropagation();
+  adminToggle.addEventListener('click', function() {
     if (!adminUnlocked) {
       if (gems >= 100) {
         gems -= 100; adminUnlocked = true; updateUI();
         showToast('🔨 Admin desbloqueado');
-        adminPanel.classList.add('open'); syncAdminInputs();
-        playCardSelectSound(); saveGame();
+        adminPanel.classList.add('open');
+        renderAdminTanks();
+        saveGame();
       } else {
         showToast('💎 Necesitas 100 gemas');
       }
     } else {
       adminPanel.classList.toggle('open');
-      if (adminPanel.classList.contains('open')) syncAdminInputs();
+      if (adminPanel.classList.contains('open')) renderAdminTanks();
     }
   });
   adminClose.addEventListener('click', function() { adminPanel.classList.remove('open'); });
 
-  function syncAdminInputs() {
-    if (!player) return;
-    document.getElementById('admDamage').value = player.rayDamage;
-    document.getElementById('admFireRate').value = player.cooldownMax;
-    document.getElementById('admRange').value = player.rayRange;
-    document.getElementById('admPierce').value = player.pierce;
-    document.getElementById('admMultishot').value = player.multishot;
+  function renderAdminTanks() {
+    adminTankList.innerHTML = '';
+    Object.keys(TANKS).forEach(function(key) {
+      const t = TANKS[key];
+      if (!t.adminOnly) return;
+      const btn = document.createElement('button');
+      btn.className = 'weapon-btn';
+      btn.textContent = t.icon + ' ' + t.name;
+      btn.addEventListener('click', function() {
+        ownedTanks[key] = true;
+        currentTankKey = key;
+        const newP = createPlayer();
+        newP.x = player.x; newP.y = player.y;
+        player = newP;
+        showToast('👑 ' + t.name + ' equipado');
+        updateUI(); saveGame();
+      });
+      adminTankList.appendChild(btn);
+    });
   }
 
-  document.querySelectorAll('[data-apply]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      if (!player) return;
-      const type = btn.getAttribute('data-apply');
-      const v = function(id) { return parseFloat(document.getElementById(id).value); };
-      if (type === 'damage') player.rayDamage = Math.max(1, v('admDamage'));
-      else if (type === 'firerate') player.cooldownMax = Math.max(1, v('admFireRate'));
-      else if (type === 'range') player.rayRange = Math.max(50, v('admRange'));
-      else if (type === 'pierce') player.pierce = Math.max(1, v('admPierce'));
-      else if (type === 'multishot') player.multishot = Math.max(1, v('admMultishot'));
-      syncAdminInputs();
+  document.getElementById('admLevelUp').addEventListener('click', function() {
+    level++; gems += 5; updateUI(); showToast('⭐ Nivel ' + level);
+    Object.keys(TANKS).forEach(function(k) {
+      const t = TANKS[k];
+      if (!t.adminOnly && t.levelReq > 0 && t.levelReq <= level && !ownedTanks[k]) {
+        ownedTanks[k] = true; showToast('🎁 ' + t.name);
+      }
     });
+    saveGame();
   });
-
-  document.getElementById('admLevelUp').addEventListener('click', function() { if (gameActive && !levelUpPending) requestLevelUp(); });
   document.getElementById('admAddGems').addEventListener('click', function() { gems += 100; updateUI(); showToast('💎 +100'); saveGame(); });
   document.getElementById('admUnlockAll').addEventListener('click', function() {
     Object.keys(TANKS).forEach(function(k) { ownedTanks[k] = true; });
-    showToast('🔓 Todos desbloqueados'); renderTanks(); saveGame();
+    showToast('🔓 Todo desbloqueado'); saveGame();
   });
   document.getElementById('admGodMode').addEventListener('click', function() {
     godMode = !godMode;
     this.style.background = godMode ? '#4a3a0a' : '#2a1a1a';
-    this.style.borderColor = godMode ? '#ffdd00' : '#8a2e2e';
     this.textContent = godMode ? '🛡️ Dios: ON' : '🛡️ Modo Dios';
   });
   document.getElementById('admReset').addEventListener('click', function() { resetGame(); });
 
-  function updateAdminWeaponButtons() {
-    adminWeaponList.innerHTML = '';
-    Object.keys(WEAPONS).forEach(function(key) {
-      const w = WEAPONS[key];
-      const btn = document.createElement('button');
-      btn.className = 'weapon-btn' + (currentWeaponKey === key ? ' active' : '');
-      btn.textContent = w.icon + ' ' + w.name;
-      btn.addEventListener('click', function() { applyWeaponToPlayer(key); });
-      adminWeaponList.appendChild(btn);
-    });
-  }
-
   // ==================== BUCLE ====================
   let lastTime = 0;
-  const TARGET_FPS = 60;
-  const FRAME_INTERVAL = 1000 / TARGET_FPS;
-  function gameLoop(timestamp) {
-    requestAnimationFrame(gameLoop);
-    if (!timestamp) timestamp = performance.now();
-    const delta = timestamp - lastTime;
+  const FRAME_INTERVAL = 1000 / 60;
+  function loop(ts) {
+    requestAnimationFrame(loop);
+    if (!ts) ts = performance.now();
+    const delta = ts - lastTime;
     if (delta < FRAME_INTERVAL - 1) return;
-    lastTime = timestamp - (delta % FRAME_INTERVAL);
+    lastTime = ts - (delta % FRAME_INTERVAL);
     update();
     draw();
   }
@@ -1701,16 +1653,17 @@ window.initGame = function() {
     currentMode = save.currentMode || 'survival';
     bestLevel = save.bestLevel || 1;
     totalKills = save.totalKills || 0;
+    if (save.upgrades) Object.keys(save.upgrades).forEach(function(k) { if (upgrades[k] !== undefined) upgrades[k] = save.upgrades[k]; });
     ownedTanks.base = true;
+    if (ownedTanks.railgun_triple) currentRailgunKey = 'triple';
     showToast('💾 Partida cargada');
   }
 
   resizeCanvas();
   initStars();
   resetGame();
-  updateAdminWeaponButtons();
-  requestAnimationFrame(gameLoop);
-
+  renderUpgrades();
+  requestAnimationFrame(loop);
   window.addEventListener('beforeunload', saveGame);
   setInterval(saveGame, 30000);
 };
