@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#05070a">
-<title>⚡ RAILGUN · v3.0</title>
+<title>⚡ RAILGUN · v3.1</title>
 <style>
   * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
   html, body {
@@ -19,7 +19,6 @@
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(ellipse at 30% 20%, #101620 0%, #05070a 70%);
   }
-
   #lockScreen {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
@@ -61,7 +60,6 @@
   @media (min-width: 800px) {
     .game-wrapper { border-radius: 18px; padding: 10px; width: 98vw; height: 96vh; }
   }
-
   .canvas-container {
     position: relative; flex: 1; border-radius: 8px; overflow: hidden; background: #06090e;
     touch-action: none;
@@ -187,7 +185,6 @@
   .reward-display { font-size: 1rem; font-weight: bold; color: #ffd966; margin-top: 0.6rem; }
   .reward-sub { font-size: 0.75rem; color: #97b9e0; margin-top: 0.3rem; }
 
-  /* ===== DOBLE JOYSTICK ===== */
   .joystick-zone {
     position: absolute; bottom: 20px;
     width: 110px; height: 110px;
@@ -228,7 +225,6 @@
     border-radius: 6px; font-size: 0.9rem; z-index: 6;
   }
 
-  /* ===== BARRA DE MEJORAS ===== */
   .upgrade-bar {
     position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 3px; z-index: 6; background: rgba(10, 15, 25, 0.8);
@@ -436,7 +432,7 @@ window.initGame = function() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
         gems, ownedTanks, adminUnlocked, currentTankKey, currentMode,
-        bestLevel, totalKills, upgrades
+        bestLevel, totalKills, upgrades, currentRailgunKey
       }));
     } catch (e) {}
   }
@@ -477,25 +473,23 @@ window.initGame = function() {
     }
   });
 
-  // ==================== TANQUES CON EVOLUCIÓN ====================
-  // Cada tanque tiene 'evolvesTo' para formar la rama de evolución
+  // ==================== TANQUES ====================
   const TANKS = {
-    base: { name: 'Base', icon: '🛡️', rarity: 'comun', levelReq: 0, evolvesTo: 'speedy', stats: { hp: 100, speed: 4.5, damage: 1, range: 1, pierce: 1, bodyDamage: 5, cooldown: 1 } },
-    speedy: { name: 'Speedy', icon: '💨', rarity: 'raro', levelReq: 5, evolvesTo: 'phantom', stats: { hp: 80, speed: 6.5, damage: 1, range: 1, pierce: 1, bodyDamage: 8, cooldown: 0.9 } },
-    phantom: { name: 'Phantom', icon: '👻', rarity: 'epico', levelReq: 10, evolvesTo: 'shadow', stats: { hp: 90, speed: 5.5, damage: 1, range: 1, pierce: 1, bodyDamage: 10, cooldown: 0.8, dodge: 0.1 } },
-    shadow: { name: 'Sombra', icon: '🌑', rarity: 'secreto', levelReq: 20, evolvesTo: 'mythic', stats: { hp: 90, speed: 6, damage: 1.5, range: 1.2, pierce: 2, bodyDamage: 15, cooldown: 0.7, dodge: 0.2 } },
-    mythic: { name: 'Mítico', icon: '🌟', rarity: 'mitico', levelReq: 25, evolvesTo: null, stats: { hp: 200, speed: 6, damage: 2, range: 2, pierce: 6, bodyDamage: 25, cooldown: 0.5, dodge: 0.25 } },
-    heavy: { name: 'Heavy', icon: '🏰', rarity: 'raro', levelReq: 5, evolvesTo: 'titan', stats: { hp: 150, speed: 3, damage: 1, range: 1, pierce: 1, bodyDamage: 12, cooldown: 1.2 } },
-    titan: { name: 'Titan', icon: '🌋', rarity: 'legendario', levelReq: 15, evolvesTo: null, stats: { hp: 180, speed: 3.5, damage: 1.2, range: 1.2, pierce: 2, bodyDamage: 20, cooldown: 1.1 } },
-    destroyer: { name: 'Destroyer', icon: '💀', rarity: 'epico', levelReq: 10, evolvesTo: 'exotic_rail', stats: { hp: 110, speed: 4, damage: 1.4, range: 1.1, pierce: 1, bodyDamage: 14, cooldown: 1 } },
-    exotic_rail: { name: 'Rail Exótico', icon: '⚡', rarity: 'exotico', levelReq: 20, evolvesTo: null, stats: { hp: 130, speed: 4.2, damage: 1.8, range: 1.5, pierce: 5, bodyDamage: 18, cooldown: 0.8 } },
-    frost: { name: 'Frost', icon: '❄️', rarity: 'epico', levelReq: 10, evolvesTo: 'lava', stats: { hp: 100, speed: 4.5, damage: 1.1, range: 1.2, pierce: 2, bodyDamage: 10, cooldown: 0.9 } },
-    lava: { name: 'Lava', icon: '🔥', rarity: 'legendario', levelReq: 15, evolvesTo: null, stats: { hp: 140, speed: 3.8, damage: 1.5, range: 1.1, pierce: 2, bodyDamage: 22, cooldown: 0.9 } },
-    plasma: { name: 'Plasma', icon: '🔮', rarity: 'exotico', levelReq: 20, evolvesTo: null, stats: { hp: 120, speed: 4.5, damage: 1.7, range: 1.4, pierce: 4, bodyDamage: 16, cooldown: 0.85 } },
-    // TANQUES DE ADMIN (exclusivos)
-    admin_god: { name: 'ADMIN DIOS', icon: '👑', rarity: 'admin', levelReq: 0, evolvesTo: null, adminOnly: true, stats: { hp: 500, speed: 8, damage: 5, range: 3, pierce: 10, bodyDamage: 100, cooldown: 0.3, dodge: 0.5 } },
-    admin_void: { name: 'ADMIN VACÍO', icon: '🕳️', rarity: 'admin', levelReq: 0, evolvesTo: null, adminOnly: true, stats: { hp: 300, speed: 10, damage: 4, range: 2.5, pierce: 8, bodyDamage: 60, cooldown: 0.4, dodge: 0.4 } },
-    admin_chaos: { name: 'ADMIN CAOS', icon: '💥', rarity: 'admin', levelReq: 0, evolvesTo: null, adminOnly: true, stats: { hp: 400, speed: 6, damage: 6, range: 2, pierce: 12, bodyDamage: 80, cooldown: 0.5 } }
+    base: { name: 'Base', icon: '🛡️', rarity: 'comun', levelReq: 0, stats: { hp: 100, speed: 4.5, damage: 1, range: 1, pierce: 1, bodyDamage: 5, cooldown: 1 } },
+    speedy: { name: 'Speedy', icon: '💨', rarity: 'raro', levelReq: 5, stats: { hp: 80, speed: 6.5, damage: 1, range: 1, pierce: 1, bodyDamage: 8, cooldown: 0.9 } },
+    phantom: { name: 'Phantom', icon: '👻', rarity: 'epico', levelReq: 10, stats: { hp: 90, speed: 5.5, damage: 1, range: 1, pierce: 1, bodyDamage: 10, cooldown: 0.8, dodge: 0.1 } },
+    shadow: { name: 'Sombra', icon: '🌑', rarity: 'secreto', levelReq: 20, stats: { hp: 90, speed: 6, damage: 1.5, range: 1.2, pierce: 2, bodyDamage: 15, cooldown: 0.7, dodge: 0.2 } },
+    mythic: { name: 'Mítico', icon: '🌟', rarity: 'mitico', levelReq: 25, stats: { hp: 200, speed: 6, damage: 2, range: 2, pierce: 6, bodyDamage: 25, cooldown: 0.5, dodge: 0.25 } },
+    heavy: { name: 'Heavy', icon: '🏰', rarity: 'raro', levelReq: 5, stats: { hp: 150, speed: 3, damage: 1, range: 1, pierce: 1, bodyDamage: 12, cooldown: 1.2 } },
+    titan: { name: 'Titan', icon: '🌋', rarity: 'legendario', levelReq: 15, stats: { hp: 180, speed: 3.5, damage: 1.2, range: 1.2, pierce: 2, bodyDamage: 20, cooldown: 1.1 } },
+    destroyer: { name: 'Destroyer', icon: '💀', rarity: 'epico', levelReq: 10, stats: { hp: 110, speed: 4, damage: 1.4, range: 1.1, pierce: 1, bodyDamage: 14, cooldown: 1 } },
+    exotic_rail: { name: 'Rail Exótico', icon: '⚡', rarity: 'exotico', levelReq: 20, stats: { hp: 130, speed: 4.2, damage: 1.8, range: 1.5, pierce: 5, bodyDamage: 18, cooldown: 0.8 } },
+    frost: { name: 'Frost', icon: '❄️', rarity: 'epico', levelReq: 10, stats: { hp: 100, speed: 4.5, damage: 1.1, range: 1.2, pierce: 2, bodyDamage: 10, cooldown: 0.9 } },
+    lava: { name: 'Lava', icon: '🔥', rarity: 'legendario', levelReq: 15, stats: { hp: 140, speed: 3.8, damage: 1.5, range: 1.1, pierce: 2, bodyDamage: 22, cooldown: 0.9 } },
+    plasma: { name: 'Plasma', icon: '🔮', rarity: 'exotico', levelReq: 20, stats: { hp: 120, speed: 4.5, damage: 1.7, range: 1.4, pierce: 4, bodyDamage: 16, cooldown: 0.85 } },
+    admin_god: { name: 'ADMIN DIOS', icon: '👑', rarity: 'admin', levelReq: 0, adminOnly: true, stats: { hp: 500, speed: 8, damage: 5, range: 3, pierce: 10, bodyDamage: 100, cooldown: 0.3, dodge: 0.5 } },
+    admin_void: { name: 'ADMIN VACÍO', icon: '🕳️', rarity: 'admin', levelReq: 0, adminOnly: true, stats: { hp: 300, speed: 10, damage: 4, range: 2.5, pierce: 8, bodyDamage: 60, cooldown: 0.4, dodge: 0.4 } },
+    admin_chaos: { name: 'ADMIN CAOS', icon: '💥', rarity: 'admin', levelReq: 0, adminOnly: true, stats: { hp: 400, speed: 6, damage: 6, range: 2, pierce: 12, bodyDamage: 80, cooldown: 0.5 } }
   };
 
   let currentTankKey = 'base';
@@ -503,11 +497,11 @@ window.initGame = function() {
   let bestLevel = 1;
   let totalKills = 0;
 
-  // ==================== RAILGUNS (VIA ÚNICA / DOBLE / TRIPLE) ====================
+  // ==================== RAILGUNS ====================
   const RAILGUNS = {
-    single: { name: 'Railgun Simple', icon: '⚡', via: 1, color: '#7df9ff' },
-    double: { name: 'Railgun Doble', icon: '⚡⚡', via: 2, color: '#ff5c8a' },
-    triple: { name: 'Railgun Triple (SECRETO)', icon: '⚡⚡⚡', via: 3, color: '#ffd700' }
+    single: { name: 'Railgun Simple', via: 1, color: '#7df9ff' },
+    double: { name: 'Railgun Doble', via: 2, color: '#ff5c8a' },
+    triple: { name: 'Railgun Triple (SECRETO)', via: 3, color: '#ffd700' }
   };
   let currentRailgunKey = 'single';
 
@@ -520,8 +514,17 @@ window.initGame = function() {
   };
   let currentMode = 'survival';
 
+  // ==================== ARMAS DE BOTS ====================
+  const BOT_WEAPONS = {
+    pistol: { name: 'Pistola', color: '#ffe066', damage: 8, speed: 7, cooldown: 25, radius: 3, spread: 0.05 },
+    shotgun: { name: 'Escopeta', color: '#ff9a5c', damage: 5, speed: 6, cooldown: 50, radius: 3, spread: 0.4, pellets: 4 },
+    sniper: { name: 'Francotirador', color: '#ff5c8a', damage: 20, speed: 12, cooldown: 70, radius: 2.5, spread: 0 },
+    smg: { name: 'SMG', color: '#7df9ff', damage: 4, speed: 8, cooldown: 12, radius: 2.5, spread: 0.15 },
+    rocket: { name: 'Cohete', color: '#ff4444', damage: 15, speed: 4, cooldown: 90, radius: 5, spread: 0.02, explosion: true }
+  };
+  const BOT_WEAPON_KEYS = Object.keys(BOT_WEAPONS);
+
   // ==================== SISTEMA DE MEJORAS ====================
-  // Cada mejora tiene nivel máximo, coste base y efecto
   const UPGRADES_DEF = {
     maxHp: { name: 'Vida', icon: '❤️', maxLevel: 10, costBase: 3, effect: '+15 HP máx' },
     speed: { name: 'Velocidad', icon: '🏃', maxLevel: 10, costBase: 3, effect: '+0.5 vel' },
@@ -537,8 +540,7 @@ window.initGame = function() {
   Object.keys(UPGRADES_DEF).forEach(function(k) { upgrades[k] = 0; });
 
   function getUpgradeCost(key) {
-    const def = UPGRADES_DEF[key];
-    return def.costBase + upgrades[key] * 2;
+    return UPGRADES_DEF[key].costBase + upgrades[key] * 2;
   }
 
   // ==================== COFRES ====================
@@ -551,11 +553,11 @@ window.initGame = function() {
               { type: 'tank', key: 'frost', weight: 20 }, { type: 'gems', amount: 80, weight: 40 }] },
     { id: 'epico', name: 'Épico', icon: '💎', price: 400,
       drops: [{ type: 'tank', key: 'titan', weight: 20 }, { type: 'tank', key: 'lava', weight: 20 },
-              { type: 'tank', key: 'secret_void', weight: 15 }, { type: 'tank', key: 'railgun_triple', weight: 5 },
-              { type: 'gems', amount: 200, weight: 40 }] },
+              { type: 'tank', key: 'shadow', weight: 15 }, { type: 'railgun', key: 'double', weight: 15 },
+              { type: 'railgun', key: 'triple', weight: 5 }, { type: 'gems', amount: 200, weight: 25 }] },
     { id: 'legendario', name: 'Legendario', icon: '👑', price: 1000,
       drops: [{ type: 'tank', key: 'exotic_rail', weight: 20 }, { type: 'tank', key: 'plasma', weight: 20 },
-              { type: 'tank', key: 'mythic', weight: 20 }, { type: 'tank', key: 'railgun_triple', weight: 20 },
+              { type: 'tank', key: 'mythic', weight: 20 }, { type: 'railgun', key: 'triple', weight: 20 },
               { type: 'gems', amount: 500, weight: 20 }] }
   ];
 
@@ -618,9 +620,8 @@ window.initGame = function() {
   let regenAccumulator = 0;
   const REGEN_INTERVAL = 60;
   let levelUpPending = false;
-  let aimAngleJoy = 0; // ángulo del joystick derecho para apuntar
+  let aimAngleJoy = 0;
   let joystickRightActive = false;
-  let redTeamScore = 0, blueTeamScore = 0;
 
   let stars = [];
   function initStars() {
@@ -650,14 +651,16 @@ window.initGame = function() {
     }
   }
 
+  // ==================== COMIDA DESTRUCTIBLE ====================
   function generateFood() {
     foodItems = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 70; i++) {
       foodItems.push({
         x: 100 + Math.random() * (MAP_W - 200),
         y: 100 + Math.random() * (MAP_H - 200),
-        xpValue: 3 + Math.floor(Math.random() * 5),
-        radius: 6,
+        xpValue: 5 + Math.floor(Math.random() * 5),
+        radius: 8,
+        hp: 1, maxHp: 1,
         color: 'hsl(' + Math.random() * 60 + 40 + ', 90%, 60%)',
         pulse: Math.random() * Math.PI * 2
       });
@@ -709,7 +712,8 @@ window.initGame = function() {
       bodyDamage: s.bodyDamage + upgrades.bodyDamage * 5,
       dodge: s.dodge || 0,
       tankKey: currentTankKey,
-      railgunKey: currentRailgunKey
+      railgunKey: currentRailgunKey,
+      team: 'blue'
     };
   }
 
@@ -726,19 +730,23 @@ window.initGame = function() {
     saveGame();
   }
 
-  // ==================== BOTS ====================
+  // ==================== BOTS CON ARMAS ====================
   function createBot(team) {
     const teamColors = { red: '#ff4444', blue: '#4488ff' };
+    const weaponKey = BOT_WEAPON_KEYS[Math.floor(Math.random() * BOT_WEAPON_KEYS.length)];
+    const w = BOT_WEAPONS[weaponKey];
     return {
       x: 200 + Math.random() * (MAP_W - 400),
       y: 200 + Math.random() * (MAP_H - 400),
       radius: 14,
-      hp: 60, maxHp: 60,
+      hp: 80, maxHp: 80,
       speed: 2.5,
       team: team,
       color: teamColors[team],
+      weaponKey: weaponKey,
+      weapon: w,
       aimAngle: Math.random() * Math.PI * 2,
-      cooldown: 30 + Math.random() * 30,
+      cooldown: 20 + Math.random() * 40,
       target: null,
       isBot: true
     };
@@ -751,35 +759,36 @@ window.initGame = function() {
       for (let i = 0; i < 4; i++) bots.push(createBot('red'));
       for (let i = 0; i < 4; i++) bots.push(createBot('blue'));
     } else if (mode.bots) {
-      for (let i = 0; i < mode.bots; i++) {
-        bots.push(createBot(Math.random() < 0.5 ? 'red' : 'blue'));
-      }
+      for (let i = 0; i < mode.bots; i++) bots.push(createBot(Math.random() < 0.5 ? 'red' : 'blue'));
     }
   }
 
   function updateBots() {
     for (let i = 0; i < bots.length; i++) {
       const bot = bots[i];
-      // Buscar objetivo: enemigos, jugador o bots enemigos
-      let closestDist = Infinity, target = null;
-      // Enemigos siempre son objetivo
+      if (bot.hp <= 0) continue;
+
+      // Buscar objetivos
+      let closestDist = Infinity, target = null, targetType = null;
+
+      // Enemigos
       for (let j = 0; j < enemies.length; j++) {
         const e = enemies[j];
         const d = Math.hypot(e.x - bot.x, e.y - bot.y);
-        if (d < closestDist) { closestDist = d; target = e; }
+        if (d < closestDist) { closestDist = d; target = e; targetType = 'enemy'; }
       }
-      // Bots de otro equipo
+      // Bots enemigos
       for (let j = 0; j < bots.length; j++) {
-        if (i === j) continue;
-        if (bots[j].team !== bot.team && bots[j].hp > 0) {
+        if (i === j || bots[j].hp <= 0) continue;
+        if (bots[j].team !== bot.team) {
           const d = Math.hypot(bots[j].x - bot.x, bots[j].y - bot.y);
-          if (d < closestDist) { closestDist = d; target = bots[j]; }
+          if (d < closestDist) { closestDist = d; target = bots[j]; targetType = 'bot'; }
         }
       }
-      // Jugador (en modo team, solo si es de otro equipo, aquí jugador es azul por defecto)
-      if (bot.team === 'red' && player) {
+      // Jugador (solo si es de otro equipo)
+      if (bot.team !== (player ? player.team : 'blue') && player) {
         const d = Math.hypot(player.x - bot.x, player.y - bot.y);
-        if (d < closestDist) { closestDist = d; target = player; }
+        if (d < closestDist) { closestDist = d; target = player; targetType = 'player'; }
       }
 
       if (target) {
@@ -787,24 +796,25 @@ window.initGame = function() {
         const dist = Math.hypot(dx, dy);
         bot.aimAngle = Math.atan2(dy, dx);
         // Moverse hacia el objetivo si está lejos
-        if (dist > 200) {
+        if (dist > 250) {
           bot.x += (dx / dist) * bot.speed;
           bot.y += (dy / dist) * bot.speed;
-        } else if (dist < 150) {
-          bot.x -= (dx / dist) * bot.speed * 0.5;
-          bot.y -= (dy / dist) * bot.speed * 0.5;
+        } else if (dist < 120) {
+          bot.x -= (dx / dist) * bot.speed * 0.7;
+          bot.y -= (dy / dist) * bot.speed * 0.7;
         }
         // Disparar
-        if (bot.cooldown <= 0 && dist < 400) {
-          bot.cooldown = 30;
-          fireBotProjectile(bot);
+        if (bot.cooldown <= 0 && dist < 450) {
+          fireBotWeapon(bot, bot.aimAngle);
+          bot.cooldown = bot.weapon.cooldown;
         }
       } else {
         // Movimiento aleatorio
-        bot.aimAngle += (Math.random() - 0.5) * 0.2;
+        bot.aimAngle += (Math.random() - 0.5) * 0.15;
         bot.x += Math.cos(bot.aimAngle) * bot.speed * 0.5;
         bot.y += Math.sin(bot.aimAngle) * bot.speed * 0.5;
       }
+
       if (bot.cooldown > 0) bot.cooldown--;
       resolveWallCollision(bot);
       bot.x = Math.max(bot.radius, Math.min(MAP_W - bot.radius, bot.x));
@@ -812,14 +822,27 @@ window.initGame = function() {
     }
   }
 
-  function fireBotProjectile(bot) {
-    projectiles.push({
-      x: bot.x, y: bot.y,
-      vx: Math.cos(bot.aimAngle) * 7,
-      vy: Math.sin(bot.aimAngle) * 7,
-      radius: 4, damage: 10, team: bot.team,
-      color: bot.color, life: 60
-    });
+  function fireBotWeapon(bot, angle) {
+    const w = bot.weapon;
+    const pellets = w.pellets || 1;
+    for (let i = 0; i < pellets; i++) {
+      let spread = (Math.random() - 0.5) * w.spread;
+      const a = angle + spread;
+      projectiles.push({
+        x: bot.x + Math.cos(a) * (bot.radius + 5),
+        y: bot.y + Math.sin(a) * (bot.radius + 5),
+        vx: Math.cos(a) * w.speed,
+        vy: Math.sin(a) * w.speed,
+        radius: w.radius,
+        damage: w.damage,
+        team: bot.team,
+        color: w.color,
+        life: 80,
+        explosion: w.explosion || false
+      });
+    }
+    // Sonido de disparo (más suave que el jugador)
+    playTone(400, 0.05, 'square', 0.05, 200);
   }
 
   // ==================== DISPARO DEL JUGADOR ====================
@@ -858,7 +881,7 @@ window.initGame = function() {
     player.recoil = 6; player.flash = 6;
 
     const baseAngle = joystickRightActive ? aimAngleJoy : Math.atan2(mouseY + camera.y - player.y, mouseX + camera.x - player.x);
-    const hitEnemies = [];
+    const hitEntities = [];
     const rays = [];
     const viaCount = r.via;
     const spread = viaCount > 1 ? 0.15 : 0;
@@ -877,6 +900,7 @@ window.initGame = function() {
       const rayEnd = getRayEndWithWalls(player.x, player.y, angle, player.rayRange);
       let pierceLeft = player.pierce;
       const candidates = [];
+
       for (let i = 0; i < enemies.length; i++) {
         const e = enemies[i];
         if (pointSegmentDistance(e.x, e.y, player.x, player.y, rayEnd.x, rayEnd.y) < e.radius + player.rayWidth / 2) {
@@ -885,27 +909,60 @@ window.initGame = function() {
       }
       for (let i = 0; i < bots.length; i++) {
         const b = bots[i];
-        if (b.hp <= 0) continue;
-        // Solo disparar a bots de otro equipo (jugador es azul)
-        if (b.team === 'red' && pointSegmentDistance(b.x, b.y, player.x, player.y, rayEnd.x, rayEnd.y) < b.radius + player.rayWidth / 2) {
+        if (b.hp <= 0 || b.team === 'blue') continue;
+        if (pointSegmentDistance(b.x, b.y, player.x, player.y, rayEnd.x, rayEnd.y) < b.radius + player.rayWidth / 2) {
           candidates.push({ target: b, d: Math.hypot(b.x - player.x, b.y - player.y), type: 'bot' });
         }
       }
+      // Comida destructible
+      for (let i = 0; i < foodItems.length; i++) {
+        const f = foodItems[i];
+        if (pointSegmentDistance(f.x, f.y, player.x, player.y, rayEnd.x, rayEnd.y) < f.radius + player.rayWidth / 2) {
+          candidates.push({ target: f, d: Math.hypot(f.x - player.x, f.y - player.y), type: 'food' });
+        }
+      }
+
       candidates.sort(function(a, b) { return a.d - b.d; });
       for (let c = 0; c < candidates.length; c++) {
         if (pierceLeft <= 0) break;
         const cand = candidates[c];
-        if (hitEnemies.indexOf(cand.target) !== -1) continue;
-        hitEnemies.push(cand.target);
-        cand.target.hp -= player.rayDamage;
-        addHitParticles(cand.target.x, cand.target.y, r.color, 4);
-        if (cand.target.hp <= 0) {
-          if (cand.type === 'enemy') {
-            const idx = enemies.indexOf(cand.target);
-            if (idx !== -1) enemies.splice(idx, 1);
-            xp += 2; totalKills++;
+        if (hitEntities.indexOf(cand.target) !== -1) continue;
+        hitEntities.push(cand.target);
+
+        if (cand.type === 'food') {
+          // Destruir comida y dar XP
+          const f = cand.target;
+          xp += f.xpValue;
+          addHitParticles(f.x, f.y, f.color, 8);
+          playTone(600, 0.08, 'sine', 0.1, 900);
+          const idx = foodItems.indexOf(f);
+          if (idx !== -1) foodItems.splice(idx, 1);
+          // Regenerar comida
+          setTimeout(function() {
+            foodItems.push({
+              x: 100 + Math.random() * (MAP_W - 200),
+              y: 100 + Math.random() * (MAP_H - 200),
+              xpValue: 5 + Math.floor(Math.random() * 5),
+              radius: 8, hp: 1, maxHp: 1,
+              color: 'hsl(' + Math.random() * 60 + 40 + ', 90%, 60%)',
+              pulse: Math.random() * Math.PI * 2
+            });
+          }, 2000 + Math.random() * 3000);
+        } else {
+          cand.target.hp -= player.rayDamage;
+          addHitParticles(cand.target.x, cand.target.y, r.color, 4);
+          if (cand.target.hp <= 0) {
+            if (cand.type === 'enemy') {
+              const idx = enemies.indexOf(cand.target);
+              if (idx !== -1) enemies.splice(idx, 1);
+              xp += 2; totalKills++;
+            } else if (cand.type === 'bot') {
+              const idx = bots.indexOf(cand.target);
+              if (idx !== -1) bots.splice(idx, 1);
+              xp += 5; totalKills++;
+            }
+            addHitParticles(cand.target.x, cand.target.y, '#ffaa66', 10);
           }
-          addHitParticles(cand.target.x, cand.target.y, '#ffaa66', 10);
         }
         pierceLeft--;
       }
@@ -930,11 +987,9 @@ window.initGame = function() {
     player.x = Math.max(player.radius, Math.min(MAP_W - player.radius, player.x));
     player.y = Math.max(player.radius, Math.min(MAP_H - player.radius, player.y));
 
-    // Cámara
     camera.x = Math.max(0, Math.min(MAP_W - W, player.x - W / 2));
     camera.y = Math.max(0, Math.min(MAP_H - H, player.y - H / 2));
 
-    // Ángulo
     let targetAngle;
     if (joystickRightActive) {
       targetAngle = aimAngleJoy;
@@ -948,7 +1003,6 @@ window.initGame = function() {
     if (player.recoil > 0) player.recoil *= 0.85;
     if (player.flash > 0) player.flash--;
 
-    // Regen
     if (player.regenPerSecond > 0 && player.hp < player.maxHp) {
       regenAccumulator++;
       if (regenAccumulator >= REGEN_INTERVAL) {
@@ -958,7 +1012,6 @@ window.initGame = function() {
       }
     }
 
-    // Disparo automático con joystick derecho o clic
     const shouldFire = joystickRightActive || mouseDown;
     if (player.cooldownTimer > 0) {
       player.cooldownTimer--;
@@ -1012,49 +1065,64 @@ window.initGame = function() {
     for (let i = projectiles.length - 1; i >= 0; i--) {
       const p = projectiles[i];
       p.x += p.vx; p.y += p.vy; p.life--;
-      if (p.life <= 0) { projectiles.splice(i, 1); continue; }
+
       // Colisión con paredes
+      let hitWall = false;
       for (let w = 0; w < walls.length; w++) {
         const wall = walls[w];
         if (p.x > wall.x && p.x < wall.x + wall.w && p.y > wall.y && p.y < wall.y + wall.h) {
-          projectiles.splice(i, 1); break;
+          hitWall = true; break;
         }
       }
-      // Colisión con jugador (si es de otro equipo)
-      if (p.team === 'red' && Math.hypot(p.x - player.x, p.y - player.y) < player.radius + p.radius) {
+      if (hitWall) {
+        if (p.explosion) {
+          addHitParticles(p.x, p.y, '#ff6600', 15);
+          // Daño en área
+          if (Math.hypot(p.x - player.x, p.y - player.y) < 80) {
+            if (!godMode) { player.hp -= p.damage; updateUI(); }
+          }
+        }
+        projectiles.splice(i, 1);
+        continue;
+      }
+
+      if (p.life <= 0) { projectiles.splice(i, 1); continue; }
+
+      // Colisión con jugador
+      if (p.team !== 'blue' && Math.hypot(p.x - player.x, p.y - player.y) < player.radius + p.radius) {
         if (!godMode) { player.hp -= p.damage; updateUI(); }
         projectiles.splice(i, 1);
         if (!godMode && player.hp <= 0) { gameOver(); return; }
         continue;
       }
+
       // Colisión con bots enemigos
+      let hitBot = false;
       for (let b = 0; b < bots.length; b++) {
-        if (bots[b].team !== p.team && Math.hypot(p.x - bots[b].x, p.y - bots[b].y) < bots[b].radius + p.radius) {
+        if (bots[b].hp <= 0 || bots[b].team === p.team) continue;
+        if (Math.hypot(p.x - bots[b].x, p.y - bots[b].y) < bots[b].radius + p.radius) {
           bots[b].hp -= p.damage;
-          projectiles.splice(i, 1);
+          hitBot = true;
+          if (bots[b].hp <= 0) {
+            addHitParticles(bots[b].x, bots[b].y, bots[b].color, 12);
+          }
           break;
         }
       }
-    }
+      if (hitBot) { projectiles.splice(i, 1); continue; }
 
-    // Comida (XP)
-    for (let i = foodItems.length - 1; i >= 0; i--) {
-      const f = foodItems[i];
-      f.pulse += 0.1;
-      if (Math.hypot(f.x - player.x, f.y - player.y) < player.radius + f.radius + 5) {
-        xp += f.xpValue;
-        addHitParticles(f.x, f.y, f.color, 4);
-        foodItems.splice(i, 1);
-        // Regenerar comida
-        setTimeout(function() {
-          foodItems.push({
-            x: 100 + Math.random() * (MAP_W - 200),
-            y: 100 + Math.random() * (MAP_H - 200),
-            xpValue: 3 + Math.floor(Math.random() * 5),
-            radius: 6, color: 'hsl(' + Math.random() * 60 + 40 + ', 90%, 60%)',
-            pulse: Math.random() * Math.PI * 2
-          });
-        }, 3000);
+      // Colisión con enemigos
+      for (let e = 0; e < enemies.length; e++) {
+        if (Math.hypot(p.x - enemies[e].x, p.y - enemies[e].y) < enemies[e].radius + p.radius) {
+          enemies[e].hp -= p.damage;
+          if (enemies[e].hp <= 0) {
+            xp += 2; totalKills++;
+            addHitParticles(enemies[e].x, enemies[e].y, '#ffaa66', 8);
+            enemies.splice(e, 1);
+          }
+          projectiles.splice(i, 1);
+          break;
+        }
       }
     }
 
@@ -1066,7 +1134,6 @@ window.initGame = function() {
       xpToNext = Math.floor(10 + level * 3);
       gems += 3;
       showToast('⭐ ¡Nivel ' + level + '! +3 gemas');
-      // Desbloqueo de tanques por evolución
       Object.keys(TANKS).forEach(function(k) {
         const t = TANKS[k];
         if (!t.adminOnly && t.levelReq > 0 && t.levelReq <= level && !ownedTanks[k]) {
@@ -1137,7 +1204,6 @@ window.initGame = function() {
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
-    // Estrellas
     for (let i = 0; i < stars.length; i++) {
       const s = stars[i];
       ctx.globalAlpha = s.alpha * (0.6 + 0.4 * Math.sin(s.twinkle));
@@ -1146,12 +1212,10 @@ window.initGame = function() {
     }
     ctx.globalAlpha = 1;
 
-    // Rejilla
     ctx.strokeStyle = 'rgba(60, 110, 180, 0.06)'; ctx.lineWidth = 1;
     for (let x = 0; x < MAP_W; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_H); ctx.stroke(); }
     for (let y = 0; y < MAP_H; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_W, y); ctx.stroke(); }
 
-    // Borde
     ctx.strokeStyle = 'rgba(100, 160, 255, 0.3)'; ctx.lineWidth = 4;
     ctx.strokeRect(0, 0, MAP_W, MAP_H);
 
@@ -1165,15 +1229,18 @@ window.initGame = function() {
       ctx.strokeRect(w.x, w.y, w.w, w.h);
     }
 
-    // Comida
+    // Comida destructible
     for (let i = 0; i < foodItems.length; i++) {
       const f = foodItems[i];
       const s = f.radius + Math.sin(f.pulse) * 1.5;
       ctx.beginPath(); ctx.arc(f.x, f.y, s, 0, Math.PI * 2);
       ctx.fillStyle = f.color;
-      ctx.shadowBlur = 10; ctx.shadowColor = f.color;
+      ctx.shadowBlur = 12; ctx.shadowColor = f.color;
       ctx.fill();
       ctx.shadowBlur = 0;
+      // Brillo interno
+      ctx.beginPath(); ctx.arc(f.x - 2, f.y - 2, s * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
     }
 
     // Enemigos
@@ -1184,10 +1251,9 @@ window.initGame = function() {
       ctx.beginPath(); ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2); ctx.fillStyle = eg; ctx.fill();
       ctx.strokeStyle = 'rgba(255, 120, 150, 0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
       const hpPct = e.hp / e.maxHp;
-      const bx = e.x - 18, by = e.y - e.radius - 14;
-      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bx - 1, by - 1, 38, 6);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(e.x - 18, e.y - e.radius - 14, 36, 5);
       ctx.fillStyle = hpPct > 0.6 ? '#3aff7a' : (hpPct > 0.25 ? '#ffbb33' : '#ff3344');
-      ctx.fillRect(bx, by, 36 * hpPct, 4);
+      ctx.fillRect(e.x - 18, e.y - e.radius - 14, 36 * hpPct, 5);
     }
 
     // Bots
@@ -1199,16 +1265,19 @@ window.initGame = function() {
       ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
       ctx.fillStyle = b.color; ctx.fill();
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-      // Cañón
+      // Cañón del bot (color según arma)
       const bx = b.x + Math.cos(b.aimAngle) * (b.radius + 8);
       const by = b.y + Math.sin(b.aimAngle) * (b.radius + 8);
       ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(bx, by);
-      ctx.strokeStyle = '#aaccff'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.strokeStyle = b.weapon.color; ctx.lineWidth = 4; ctx.stroke();
+      // Indicador de arma
+      ctx.font = '8px monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = b.weapon.color;
+      ctx.fillText(b.weapon.name.substring(0, 3), b.x, b.y - b.radius - 4);
       ctx.restore();
-      // Barra HP
       const hpPct = b.hp / b.maxHp;
-      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36, 5);
-      ctx.fillStyle = b.color; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36 * hpPct, 5);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36, 4);
+      ctx.fillStyle = b.color; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36 * hpPct, 4);
     }
 
     // Proyectiles
@@ -1250,18 +1319,17 @@ window.initGame = function() {
     // Jugador
     if (player) {
       ctx.save();
-      ctx.shadowColor = godMode ? '#ffdd00' : (player.tankKey.startsWith('admin') ? '#ff0000' : '#2ad4ff');
+      ctx.shadowColor = godMode ? '#ffdd00' : '#2ad4ff';
       ctx.shadowBlur = 25;
       const pg = ctx.createRadialGradient(player.x - 5, player.y - 5, 2, player.x, player.y, player.radius);
       pg.addColorStop(0, '#8fdcff');
-      pg.addColorStop(0.5, godMode ? '#ffcc33' : (player.tankKey.startsWith('admin') ? '#ff4444' : '#2b8cff'));
+      pg.addColorStop(0.5, godMode ? '#ffcc33' : '#2b8cff');
       pg.addColorStop(1, '#0a2a5a');
       ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
       ctx.fillStyle = pg; ctx.fill();
       ctx.strokeStyle = godMode ? '#ffe680' : '#7dd4ff'; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.restore();
 
-      // Cañón
       const ang = player.aimAngle;
       const tipX = player.x + Math.cos(ang) * (player.radius + 14 - player.recoil);
       const tipY = player.y + Math.sin(ang) * (player.radius + 14 - player.recoil);
@@ -1277,7 +1345,7 @@ window.initGame = function() {
     if (player) {
       ctx.font = 'bold 10px "Segoe UI", monospace'; ctx.textAlign = 'center';
       const px = player.x - camera.x, py = player.y - camera.y;
-      ctx.fillStyle = '#88aadd';
+      ctx.fillStyle = RAILGUNS[currentRailgunKey].color;
       ctx.fillText(RAILGUNS[currentRailgunKey].name, px, py - player.radius - 18);
     }
 
@@ -1300,11 +1368,12 @@ window.initGame = function() {
     const sx = 130 / MAP_W, sy = 130 / MAP_H;
     mctx.fillStyle = 'rgba(60, 100, 160, 0.6)';
     for (let i = 0; i < walls.length; i++) mctx.fillRect(walls[i].x * sx, walls[i].y * sy, walls[i].w * sx, walls[i].h * sy);
-    mctx.fillStyle = 'rgba(255, 200, 50, 0.6)';
+    mctx.fillStyle = 'rgba(255, 200, 50, 0.8)';
     for (let i = 0; i < foodItems.length; i++) mctx.fillRect(foodItems[i].x * sx - 1, foodItems[i].y * sy - 1, 2, 2);
     mctx.fillStyle = '#ff6688';
     for (let i = 0; i < enemies.length; i++) mctx.fillRect(enemies[i].x * sx - 1, enemies[i].y * sy - 1, 2, 2);
     for (let i = 0; i < bots.length; i++) {
+      if (bots[i].hp <= 0) continue;
       mctx.fillStyle = bots[i].color;
       mctx.beginPath(); mctx.arc(bots[i].x * sx, bots[i].y * sy, 2, 0, Math.PI * 2); mctx.fill();
     }
@@ -1335,7 +1404,6 @@ window.initGame = function() {
     saveGame();
   }
 
-  // ==================== RENDER TANQUES ====================
   function renderTanks() {
     tanksGrid.innerHTML = '';
     tankLevelReq.textContent = level;
@@ -1362,7 +1430,6 @@ window.initGame = function() {
     });
   }
 
-  // ==================== RENDER MODOS ====================
   function renderModes() {
     modesGrid.innerHTML = '';
     Object.keys(MODES).forEach(function(key) {
@@ -1381,7 +1448,6 @@ window.initGame = function() {
     });
   }
 
-  // ==================== RENDER COFRES ====================
   function renderShop() {
     shopGrid.innerHTML = '';
     CHESTS.forEach(function(c) {
@@ -1419,24 +1485,26 @@ window.initGame = function() {
         gems += drop.amount;
         html = '<div class="big-icon">💎</div><div class="reward-display">+' + drop.amount + ' GEMAS</div>';
       } else if (drop.type === 'tank') {
-        if (drop.key === 'railgun_triple') {
-          if (!ownedTanks.railgun_triple) {
-            ownedTanks.railgun_triple = true;
-            currentRailgunKey = 'triple';
-            html = '<div class="big-icon">⚡⚡⚡</div><div class="reward-display" style="color:#ffd700">¡RAILGUN TRIPLE!</div><div class="reward-sub">Secreto desbloqueado</div>';
-          } else {
-            gems += 100;
-            html = '<div class="big-icon">💎</div><div class="reward-display">+100 gemas</div>';
-          }
+        const t = TANKS[drop.key];
+        if (t && !ownedTanks[drop.key]) {
+          ownedTanks[drop.key] = true;
+          html = '<div class="big-icon">' + t.icon + '</div><div class="reward-display">¡' + t.name + '!</div><div class="reward-sub">' + t.rarity.toUpperCase() + '</div>';
         } else {
-          const t = TANKS[drop.key];
-          if (t && !ownedTanks[drop.key]) {
-            ownedTanks[drop.key] = true;
-            html = '<div class="big-icon">' + t.icon + '</div><div class="reward-display">¡' + t.name + '!</div><div class="reward-sub">' + t.rarity.toUpperCase() + '</div>';
-          } else {
-            gems += 30;
-            html = '<div class="big-icon">💎</div><div class="reward-display">Repetido +30</div>';
-          }
+          gems += 30;
+          html = '<div class="big-icon">💎</div><div class="reward-display">Repetido +30</div>';
+        }
+      } else if (drop.type === 'railgun') {
+        if (drop.key === 'double' && !ownedTanks.railgun_double) {
+          ownedTanks.railgun_double = true;
+          currentRailgunKey = 'double';
+          html = '<div class="big-icon">⚡⚡</div><div class="reward-display" style="color:#ff5c8a">¡RAILGUN DOBLE!</div>';
+        } else if (drop.key === 'triple' && !ownedTanks.railgun_triple) {
+          ownedTanks.railgun_triple = true;
+          currentRailgunKey = 'triple';
+          html = '<div class="big-icon">⚡⚡⚡</div><div class="reward-display" style="color:#ffd700">¡RAILGUN TRIPLE!</div><div class="reward-sub">SECRETO</div>';
+        } else {
+          gems += 100;
+          html = '<div class="big-icon">💎</div><div class="reward-display">+100 gemas</div>';
         }
       }
       chestOpening.innerHTML = html + '<button class="admin-btn good" style="margin-top:1rem;width:auto;padding:0.4rem 1.2rem;" id="chestAccept">✓</button>';
@@ -1446,7 +1514,6 @@ window.initGame = function() {
     }, 1000);
   }
 
-  // ==================== RENDER MEJORAS ====================
   function renderUpgrades() {
     upgradeBar.innerHTML = '';
     Object.keys(UPGRADES_DEF).forEach(function(key) {
@@ -1464,7 +1531,6 @@ window.initGame = function() {
         gems -= cost;
         upgrades[key]++;
         updateUI(); renderUpgrades();
-        // Recalcular stats del jugador
         const newP = createPlayer();
         newP.x = player.x; newP.y = player.y; newP.hp = Math.min(player.hp, newP.maxHp);
         player = newP;
@@ -1511,7 +1577,6 @@ window.initGame = function() {
     }
   }
 
-  // Joystick izquierdo: movimiento
   setupJoystick(joystickLeft, knobLeft, function(dx, dy) {
     const dz = 10;
     keys.a = dx < -dz; keys.d = dx > dz;
@@ -1520,7 +1585,6 @@ window.initGame = function() {
     keys.a = keys.d = keys.w = keys.s = false;
   });
 
-  // Joystick derecho: apuntar y disparar
   setupJoystick(joystickRight, knobRight, function(dx, dy) {
     if (Math.hypot(dx, dy) > 10) {
       joystickRightActive = true;
@@ -1530,7 +1594,6 @@ window.initGame = function() {
     joystickRightActive = false;
   });
 
-  // PC: clic para disparar
   canvas.addEventListener('mousemove', function(e) {
     const r = canvas.getBoundingClientRect();
     mouseX = (e.clientX - r.left) * (W / r.width);
@@ -1556,7 +1619,7 @@ window.initGame = function() {
     if (k === 'd' || k === 'arrowright') keys.d = false;
   });
 
-  // ==================== BOTONES HUD ====================
+  // ==================== BOTONES ====================
   restartBtn.addEventListener('click', function() { resetGame(); });
   shopBtn.addEventListener('click', function() { shopModal.classList.add('open'); renderShop(); });
   tanksBtn.addEventListener('click', function() { tanksModal.classList.add('open'); renderTanks(); });
@@ -1651,11 +1714,11 @@ window.initGame = function() {
     adminUnlocked = save.adminUnlocked || false;
     currentTankKey = save.currentTankKey || 'base';
     currentMode = save.currentMode || 'survival';
+    currentRailgunKey = save.currentRailgunKey || 'single';
     bestLevel = save.bestLevel || 1;
     totalKills = save.totalKills || 0;
     if (save.upgrades) Object.keys(save.upgrades).forEach(function(k) { if (upgrades[k] !== undefined) upgrades[k] = save.upgrades[k]; });
     ownedTanks.base = true;
-    if (ownedTanks.railgun_triple) currentRailgunKey = 'triple';
     showToast('💾 Partida cargada');
   }
 
