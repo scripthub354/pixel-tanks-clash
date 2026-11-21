@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#05070a">
-<title>⚡ RAILGUN · v3.1</title>
+<title>⚡ RAILGUN · v3.2</title>
 <style>
   * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
   html, body {
@@ -19,6 +19,7 @@
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(ellipse at 30% 20%, #101620 0%, #05070a 70%);
   }
+
   #lockScreen {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
@@ -79,6 +80,7 @@
   }
   .level-badge { color: #ffd966; border-color: #5a4a1f; }
   .gem-badge { color: #c77dff; border-color: #5a2e8a; }
+  .xp-badge { color: #7df9ff; border-color: #2e5a8a; }
   .hp-fill { width: 60px; height: 9px; background: #0a0e14; border-radius: 3px; overflow: hidden; border: 1px solid #3a1f28; }
   @media (min-width: 500px) { .hp-fill { width: 90px; height: 12px; } }
   .hp-fill span { display: block; height: 100%; background: linear-gradient(90deg, #ff1f4b, #ff8a5c); transition: width 0.12s ease; }
@@ -227,24 +229,63 @@
 
   .upgrade-bar {
     position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 3px; z-index: 6; background: rgba(10, 15, 25, 0.8);
+    display: flex; gap: 3px; z-index: 6; background: rgba(10, 15, 25, 0.85);
     padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(80, 140, 255, 0.3);
+    flex-wrap: wrap; justify-content: center; max-width: 95%;
   }
   .upgrade-btn {
     background: #1a2a3e; border: 1px solid #3a5a8a; color: #c8deff;
     width: 36px; height: 36px; border-radius: 6px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 0.55rem; font-weight: bold; cursor: pointer;
+    font-size: 0.5rem; font-weight: bold; cursor: pointer;
     position: relative;
   }
   .upgrade-btn .upg-icon { font-size: 0.9rem; line-height: 1; }
-  .upgrade-btn .upg-cost { font-size: 0.5rem; color: #ffd966; }
+  .upgrade-btn .upg-cost { font-size: 0.45rem; color: #7df9ff; }
   .upgrade-btn:active { transform: scale(0.9); }
   .upgrade-btn.maxed { opacity: 0.4; }
+  .upgrade-btn.no-xp { border-color: #8a2e2e; opacity: 0.6; }
   @media (min-width: 500px) {
     .upgrade-btn { width: 44px; height: 44px; font-size: 0.6rem; }
     .upgrade-btn .upg-icon { font-size: 1.1rem; }
+    .upgrade-btn .upg-cost { font-size: 0.5rem; }
   }
+
+  /* Animación de muerte */
+  .death-overlay {
+    position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.85);
+    display: none; align-items: center; justify-content: center; flex-direction: column;
+    animation: deathFadeIn 0.5s ease;
+  }
+  .death-overlay.show { display: flex; }
+  @keyframes deathFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .death-icon {
+    font-size: 6rem; animation: deathShake 0.5s ease infinite alternate;
+    filter: drop-shadow(0 0 30px #ff0000);
+  }
+  @keyframes deathShake {
+    from { transform: rotate(-5deg) scale(1); }
+    to { transform: rotate(5deg) scale(1.1); }
+  }
+  .death-title {
+    font-size: 2rem; color: #ff4444; font-weight: bold;
+    text-transform: uppercase; letter-spacing: 4px; margin-top: 1rem;
+    text-shadow: 0 0 20px #ff0000;
+  }
+  .death-stats {
+    color: #c8deff; font-size: 1rem; margin-top: 1rem; text-align: center;
+    line-height: 1.8;
+  }
+  .death-btn {
+    margin-top: 1.5rem; background: linear-gradient(180deg, #2e5a8a, #1a3350);
+    border: 1px solid #7df9ff; color: #fff; font-weight: bold;
+    font-size: 1rem; padding: 0.8rem 2rem; border-radius: 12px;
+    cursor: pointer; letter-spacing: 2px;
+  }
+  .death-btn:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
@@ -277,13 +318,14 @@
     <div class="stats-bar">
       <div class="hud-item level-badge">⭐ <span id="levelDisplay">1</span></div>
       <div class="hud-item gem-badge">💎 <span id="gemDisplay">0</span></div>
+      <div class="hud-item xp-badge">✨ <span id="xpDisplay">0</span></div>
       <div class="hud-item hp-container">
         <span>❤️</span>
         <div class="hp-fill"><span id="hpFill" style="width:100%"></span></div>
       </div>
       <div class="hud-item" style="padding:2px 4px;gap:2px;">
         <button class="hud-btn" id="modesBtn" title="Modos">🎮</button>
-        <button class="hud-btn" id="tanksBtn" title="Cambiar tanque">🚀</button>
+        <button class="hud-btn" id="tanksBtn" title="Tanque">🚀</button>
         <button class="hud-btn" id="shopBtn" title="Tienda">🛒</button>
         <button class="hud-btn" id="soundToggle" title="Sonido">🔊</button>
         <button class="hud-btn" id="adminToggle" title="Admin">🔨</button>
@@ -304,7 +346,9 @@
 <div class="modal-overlay" id="tanksModal">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">🚀 Tanques</div><button class="close-btn" data-close="tanksModal">✕</button></div>
-    <div style="text-align:center;margin-bottom:0.5rem;font-size:0.75rem;color:#97b9e0;">Árbol de evolución · Nivel actual: <span id="tankLevelReq" style="color:#7df9ff;font-weight:bold;">1</span></div>
+    <div style="text-align:center;margin-bottom:0.5rem;font-size:0.75rem;color:#97b9e0;">
+      Empiezas con Base · Evoluciona al subir de nivel · Nivel actual: <span id="tankLevelReq" style="color:#7df9ff;font-weight:bold;">1</span>
+    </div>
     <div class="tanks-grid" id="tanksGrid"></div>
   </div>
 </div>
@@ -343,6 +387,14 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Animación de muerte -->
+<div class="death-overlay" id="deathOverlay">
+  <div class="death-icon">💀</div>
+  <div class="death-title">Has Caído</div>
+  <div class="death-stats" id="deathStats"></div>
+  <button class="death-btn" id="deathRestartBtn">⟳ REINTENTAR</button>
+</div>
 
 <script>
 // ==================== CONTRASEÑA ====================
@@ -395,6 +447,7 @@ window.initGame = function() {
   const canvasContainer = document.getElementById('canvasContainer');
   const levelSpan = document.getElementById('levelDisplay');
   const gemDisplay = document.getElementById('gemDisplay');
+  const xpDisplay = document.getElementById('xpDisplay');
   const shopGemCount = document.getElementById('shopGemCount');
   const hpFillSpan = document.getElementById('hpFill');
   const restartBtn = document.getElementById('restartBtn');
@@ -422,6 +475,9 @@ window.initGame = function() {
   const knobRight = document.getElementById('knobRight');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   const upgradeBar = document.getElementById('upgradeBar');
+  const deathOverlay = document.getElementById('deathOverlay');
+  const deathStats = document.getElementById('deathStats');
+  const deathRestartBtn = document.getElementById('deathRestartBtn');
 
   // ==================== GUARDADO ====================
   const SAVE_KEY = 'railgun_save_v3';
@@ -476,17 +532,17 @@ window.initGame = function() {
   // ==================== TANQUES ====================
   const TANKS = {
     base: { name: 'Base', icon: '🛡️', rarity: 'comun', levelReq: 0, stats: { hp: 100, speed: 4.5, damage: 1, range: 1, pierce: 1, bodyDamage: 5, cooldown: 1 } },
-    speedy: { name: 'Speedy', icon: '💨', rarity: 'raro', levelReq: 5, stats: { hp: 80, speed: 6.5, damage: 1, range: 1, pierce: 1, bodyDamage: 8, cooldown: 0.9 } },
-    phantom: { name: 'Phantom', icon: '👻', rarity: 'epico', levelReq: 10, stats: { hp: 90, speed: 5.5, damage: 1, range: 1, pierce: 1, bodyDamage: 10, cooldown: 0.8, dodge: 0.1 } },
-    shadow: { name: 'Sombra', icon: '🌑', rarity: 'secreto', levelReq: 20, stats: { hp: 90, speed: 6, damage: 1.5, range: 1.2, pierce: 2, bodyDamage: 15, cooldown: 0.7, dodge: 0.2 } },
-    mythic: { name: 'Mítico', icon: '🌟', rarity: 'mitico', levelReq: 25, stats: { hp: 200, speed: 6, damage: 2, range: 2, pierce: 6, bodyDamage: 25, cooldown: 0.5, dodge: 0.25 } },
-    heavy: { name: 'Heavy', icon: '🏰', rarity: 'raro', levelReq: 5, stats: { hp: 150, speed: 3, damage: 1, range: 1, pierce: 1, bodyDamage: 12, cooldown: 1.2 } },
-    titan: { name: 'Titan', icon: '🌋', rarity: 'legendario', levelReq: 15, stats: { hp: 180, speed: 3.5, damage: 1.2, range: 1.2, pierce: 2, bodyDamage: 20, cooldown: 1.1 } },
-    destroyer: { name: 'Destroyer', icon: '💀', rarity: 'epico', levelReq: 10, stats: { hp: 110, speed: 4, damage: 1.4, range: 1.1, pierce: 1, bodyDamage: 14, cooldown: 1 } },
-    exotic_rail: { name: 'Rail Exótico', icon: '⚡', rarity: 'exotico', levelReq: 20, stats: { hp: 130, speed: 4.2, damage: 1.8, range: 1.5, pierce: 5, bodyDamage: 18, cooldown: 0.8 } },
-    frost: { name: 'Frost', icon: '❄️', rarity: 'epico', levelReq: 10, stats: { hp: 100, speed: 4.5, damage: 1.1, range: 1.2, pierce: 2, bodyDamage: 10, cooldown: 0.9 } },
-    lava: { name: 'Lava', icon: '🔥', rarity: 'legendario', levelReq: 15, stats: { hp: 140, speed: 3.8, damage: 1.5, range: 1.1, pierce: 2, bodyDamage: 22, cooldown: 0.9 } },
-    plasma: { name: 'Plasma', icon: '🔮', rarity: 'exotico', levelReq: 20, stats: { hp: 120, speed: 4.5, damage: 1.7, range: 1.4, pierce: 4, bodyDamage: 16, cooldown: 0.85 } },
+    speedy: { name: 'Speedy', icon: '💨', rarity: 'raro', levelReq: 3, stats: { hp: 80, speed: 6.5, damage: 1, range: 1, pierce: 1, bodyDamage: 8, cooldown: 0.9 } },
+    phantom: { name: 'Phantom', icon: '👻', rarity: 'epico', levelReq: 6, stats: { hp: 90, speed: 5.5, damage: 1, range: 1, pierce: 1, bodyDamage: 10, cooldown: 0.8, dodge: 0.1 } },
+    shadow: { name: 'Sombra', icon: '🌑', rarity: 'secreto', levelReq: 12, stats: { hp: 90, speed: 6, damage: 1.5, range: 1.2, pierce: 2, bodyDamage: 15, cooldown: 0.7, dodge: 0.2 } },
+    mythic: { name: 'Mítico', icon: '🌟', rarity: 'mitico', levelReq: 20, stats: { hp: 200, speed: 6, damage: 2, range: 2, pierce: 6, bodyDamage: 25, cooldown: 0.5, dodge: 0.25 } },
+    heavy: { name: 'Heavy', icon: '🏰', rarity: 'raro', levelReq: 3, stats: { hp: 150, speed: 3, damage: 1, range: 1, pierce: 1, bodyDamage: 12, cooldown: 1.2 } },
+    titan: { name: 'Titan', icon: '🌋', rarity: 'legendario', levelReq: 10, stats: { hp: 180, speed: 3.5, damage: 1.2, range: 1.2, pierce: 2, bodyDamage: 20, cooldown: 1.1 } },
+    destroyer: { name: 'Destroyer', icon: '💀', rarity: 'epico', levelReq: 6, stats: { hp: 110, speed: 4, damage: 1.4, range: 1.1, pierce: 1, bodyDamage: 14, cooldown: 1 } },
+    exotic_rail: { name: 'Rail Exótico', icon: '⚡', rarity: 'exotico', levelReq: 15, stats: { hp: 130, speed: 4.2, damage: 1.8, range: 1.5, pierce: 5, bodyDamage: 18, cooldown: 0.8 } },
+    frost: { name: 'Frost', icon: '❄️', rarity: 'epico', levelReq: 6, stats: { hp: 100, speed: 4.5, damage: 1.1, range: 1.2, pierce: 2, bodyDamage: 10, cooldown: 0.9 } },
+    lava: { name: 'Lava', icon: '🔥', rarity: 'legendario', levelReq: 10, stats: { hp: 140, speed: 3.8, damage: 1.5, range: 1.1, pierce: 2, bodyDamage: 22, cooldown: 0.9 } },
+    plasma: { name: 'Plasma', icon: '🔮', rarity: 'exotico', levelReq: 15, stats: { hp: 120, speed: 4.5, damage: 1.7, range: 1.4, pierce: 4, bodyDamage: 16, cooldown: 0.85 } },
     admin_god: { name: 'ADMIN DIOS', icon: '👑', rarity: 'admin', levelReq: 0, adminOnly: true, stats: { hp: 500, speed: 8, damage: 5, range: 3, pierce: 10, bodyDamage: 100, cooldown: 0.3, dodge: 0.5 } },
     admin_void: { name: 'ADMIN VACÍO', icon: '🕳️', rarity: 'admin', levelReq: 0, adminOnly: true, stats: { hp: 300, speed: 10, damage: 4, range: 2.5, pierce: 8, bodyDamage: 60, cooldown: 0.4, dodge: 0.4 } },
     admin_chaos: { name: 'ADMIN CAOS', icon: '💥', rarity: 'admin', levelReq: 0, adminOnly: true, stats: { hp: 400, speed: 6, damage: 6, range: 2, pierce: 12, bodyDamage: 80, cooldown: 0.5 } }
@@ -505,12 +561,12 @@ window.initGame = function() {
   };
   let currentRailgunKey = 'single';
 
-  // ==================== MODOS ====================
+  // ==================== MODOS (MÁS BOTS) ====================
   const MODES = {
-    survival: { name: 'Supervivencia', icon: '💀', desc: 'Sobrevive', spawnRate: 45, enemyHp: 1, maxEnemies: 25, bots: 2 },
-    redVsBlue: { name: 'Rojo vs Azul', icon: '🔴🔵', desc: 'Equipos se pelean', spawnRate: 30, enemyHp: 1, maxEnemies: 20, teamMode: true },
-    boss: { name: 'Jefe', icon: '👹', desc: 'Derrota al jefe', spawnRate: 80, enemyHp: 1.5, maxEnemies: 15, bossMode: true, bots: 3 },
-    endless: { name: 'Infinito', icon: '♾️', desc: 'Sin fin', spawnRate: 30, enemyHp: 1.3, maxEnemies: 35, bots: 2 }
+    survival: { name: 'Supervivencia', icon: '💀', desc: 'Sobrevive', spawnRate: 45, enemyHp: 1, maxEnemies: 25, bots: 6 },
+    redVsBlue: { name: 'Rojo vs Azul', icon: '🔴🔵', desc: 'Equipos', spawnRate: 30, enemyHp: 1, maxEnemies: 20, teamMode: true, botsPerTeam: 6 },
+    boss: { name: 'Jefe', icon: '👹', desc: 'Derrota al jefe', spawnRate: 80, enemyHp: 1.5, maxEnemies: 15, bossMode: true, bots: 8 },
+    endless: { name: 'Infinito', icon: '♾️', desc: 'Sin fin', spawnRate: 30, enemyHp: 1.3, maxEnemies: 35, bots: 8 }
   };
   let currentMode = 'survival';
 
@@ -524,41 +580,51 @@ window.initGame = function() {
   };
   const BOT_WEAPON_KEYS = Object.keys(BOT_WEAPONS);
 
-  // ==================== SISTEMA DE MEJORAS ====================
+  // ==================== MEJORAS CON XP ====================
   const UPGRADES_DEF = {
-    maxHp: { name: 'Vida', icon: '❤️', maxLevel: 10, costBase: 3, effect: '+15 HP máx' },
-    speed: { name: 'Velocidad', icon: '🏃', maxLevel: 10, costBase: 3, effect: '+0.5 vel' },
-    bodyDamage: { name: 'Daño corporal', icon: '💪', maxLevel: 10, costBase: 4, effect: '+5 daño cuerpo' },
-    fireRate: { name: 'Cadencia', icon: '⚡', maxLevel: 10, costBase: 4, effect: '-10% cooldown' },
-    damage: { name: 'Daño', icon: '🔥', maxLevel: 10, costBase: 5, effect: '+3 daño' },
-    healthRegen: { name: 'Regeneración', icon: '💚', maxLevel: 10, costBase: 3, effect: '+0.3 HP/s' },
-    bulletSpeed: { name: 'Vel. bala', icon: '💨', maxLevel: 5, costBase: 4, effect: '+15% vel bala' },
-    range: { name: 'Alcance', icon: '🎯', maxLevel: 10, costBase: 3, effect: '+50 alcance' },
-    pierce: { name: 'Perforación', icon: '🗡️', maxLevel: 5, costBase: 6, effect: '+1 perforación' }
+    maxHp: { name: 'Vida', icon: '❤️', maxLevel: 10, costBase: 5, effect: '+15 HP máx' },
+    speed: { name: 'Velocidad', icon: '🏃', maxLevel: 10, costBase: 5, effect: '+0.5 vel' },
+    bodyDamage: { name: 'Daño corporal', icon: '💪', maxLevel: 10, costBase: 6, effect: '+5 daño cuerpo' },
+    fireRate: { name: 'Cadencia', icon: '⚡', maxLevel: 10, costBase: 6, effect: '-10% cooldown' },
+    damage: { name: 'Daño', icon: '🔥', maxLevel: 10, costBase: 8, effect: '+3 daño' },
+    healthRegen: { name: 'Regeneración', icon: '💚', maxLevel: 10, costBase: 5, effect: '+0.3 HP/s' },
+    bulletSpeed: { name: 'Vel. bala', icon: '💨', maxLevel: 5, costBase: 6, effect: '+15% vel bala' },
+    range: { name: 'Alcance', icon: '🎯', maxLevel: 10, costBase: 5, effect: '+50 alcance' },
+    pierce: { name: 'Perforación', icon: '🗡️', maxLevel: 5, costBase: 10, effect: '+1 perforación' }
   };
   let upgrades = {};
   Object.keys(UPGRADES_DEF).forEach(function(k) { upgrades[k] = 0; });
 
+  // Coste en XP
   function getUpgradeCost(key) {
-    return UPGRADES_DEF[key].costBase + upgrades[key] * 2;
+    return UPGRADES_DEF[key].costBase + upgrades[key] * 3;
   }
 
-  // ==================== COFRES ====================
+  // ==================== COFRES (MÁS GEMAS FÁCILES) ====================
   const CHESTS = [
-    { id: 'comun', name: 'Común', icon: '📦', price: 50,
-      drops: [{ type: 'tank', key: 'speedy', weight: 25 }, { type: 'tank', key: 'heavy', weight: 25 },
-              { type: 'gems', amount: 15, weight: 50 }] },
-    { id: 'raro', name: 'Raro', icon: '🎁', price: 150,
-      drops: [{ type: 'tank', key: 'destroyer', weight: 20 }, { type: 'tank', key: 'phantom', weight: 20 },
-              { type: 'tank', key: 'frost', weight: 20 }, { type: 'gems', amount: 80, weight: 40 }] },
-    { id: 'epico', name: 'Épico', icon: '💎', price: 400,
-      drops: [{ type: 'tank', key: 'titan', weight: 20 }, { type: 'tank', key: 'lava', weight: 20 },
-              { type: 'tank', key: 'shadow', weight: 15 }, { type: 'railgun', key: 'double', weight: 15 },
-              { type: 'railgun', key: 'triple', weight: 5 }, { type: 'gems', amount: 200, weight: 25 }] },
-    { id: 'legendario', name: 'Legendario', icon: '👑', price: 1000,
-      drops: [{ type: 'tank', key: 'exotic_rail', weight: 20 }, { type: 'tank', key: 'plasma', weight: 20 },
-              { type: 'tank', key: 'mythic', weight: 20 }, { type: 'railgun', key: 'triple', weight: 20 },
-              { type: 'gems', amount: 500, weight: 20 }] }
+    { id: 'comun', name: 'Común', icon: '📦', price: 25,
+      drops: [{ type: 'gems', amount: 30, weight: 60 },
+              { type: 'tank', key: 'speedy', weight: 20 },
+              { type: 'tank', key: 'heavy', weight: 20 }] },
+    { id: 'raro', name: 'Raro', icon: '🎁', price: 80,
+      drops: [{ type: 'gems', amount: 100, weight: 50 },
+              { type: 'tank', key: 'destroyer', weight: 15 },
+              { type: 'tank', key: 'phantom', weight: 15 },
+              { type: 'tank', key: 'frost', weight: 15 },
+              { type: 'railgun', key: 'double', weight: 5 }] },
+    { id: 'epico', name: 'Épico', icon: '💎', price: 200,
+      drops: [{ type: 'gems', amount: 300, weight: 40 },
+              { type: 'tank', key: 'titan', weight: 15 },
+              { type: 'tank', key: 'lava', weight: 15 },
+              { type: 'tank', key: 'shadow', weight: 10 },
+              { type: 'railgun', key: 'double', weight: 15 },
+              { type: 'railgun', key: 'triple', weight: 5 }] },
+    { id: 'legendario', name: 'Legendario', icon: '👑', price: 500,
+      drops: [{ type: 'gems', amount: 800, weight: 30 },
+              { type: 'tank', key: 'exotic_rail', weight: 15 },
+              { type: 'tank', key: 'plasma', weight: 15 },
+              { type: 'tank', key: 'mythic', weight: 15 },
+              { type: 'railgun', key: 'triple', weight: 25 }] }
   ];
 
   // ==================== AUDIO ====================
@@ -651,7 +717,7 @@ window.initGame = function() {
     }
   }
 
-  // ==================== COMIDA DESTRUCTIBLE ====================
+  // ==================== COMIDA ====================
   function generateFood() {
     foodItems = [];
     for (let i = 0; i < 70; i++) {
@@ -706,7 +772,7 @@ window.initGame = function() {
       pierce: Math.round(s.pierce + upgrades.pierce),
       cooldownMax: Math.max(3, Math.round(18 * s.cooldown * (1 - upgrades.fireRate * 0.1))),
       cooldownTimer: 0,
-      chargeTime: 18, chargeTimer: 0, isCharging: false, chargeSoundPlayed: false,
+      chargeTime: 18, chargeTimer: 0, isCharging: false,
       aimAngle: 0, recoil: 0, flash: 0,
       regenPerSecond: 0.3 + upgrades.healthRegen * 0.3,
       bodyDamage: s.bodyDamage + upgrades.bodyDamage * 5,
@@ -717,12 +783,41 @@ window.initGame = function() {
     };
   }
 
+  // Evolución automática al subir de nivel
+  function checkTankEvolution() {
+    const tank = TANKS[currentTankKey];
+    // Buscar el siguiente tanque en la evolución del árbol
+    const candidates = Object.keys(TANKS).filter(function(k) {
+      const t = TANKS[k];
+      return !t.adminOnly && t.levelReq > 0 && t.levelReq <= level;
+    });
+    // Si hay tanques de mayor nivel que el actual, ofrecer evolución
+    const better = candidates.filter(function(k) {
+      return TANKS[k].levelReq > TANKS[currentTankKey].levelReq;
+    });
+    if (better.length > 0) {
+      better.sort(function(a, b) { return TANKS[b].levelReq - TANKS[a].levelReq; });
+      const nextKey = better[0];
+      if (TANKS[nextKey].levelReq <= level && currentTankKey !== nextKey) {
+        ownedTanks[nextKey] = true;
+        currentTankKey = nextKey;
+        const newP = createPlayer();
+        newP.x = player.x; newP.y = player.y;
+        newP.hp = Math.min(player.hp, newP.maxHp);
+        player = newP;
+        showToast('🚀 ¡Evolucionaste a ' + TANKS[nextKey].name + '!');
+        playTone(523, 0.2, 'triangle', 0.15, 1046);
+      }
+    }
+  }
+
   function applyTankToPlayer(key) {
     if (!player || !TANKS[key] || !ownedTanks[key]) return;
     if (level < TANKS[key].levelReq) { showToast('🔒 Nivel ' + TANKS[key].levelReq); return; }
     currentTankKey = key;
     const newP = createPlayer();
     newP.x = player.x; newP.y = player.y;
+    newP.hp = Math.min(player.hp, newP.maxHp);
     player = newP;
     showToast('🚀 ' + TANKS[key].name + ' equipado');
     renderTanks();
@@ -730,7 +825,7 @@ window.initGame = function() {
     saveGame();
   }
 
-  // ==================== BOTS CON ARMAS ====================
+  // ==================== BOTS TANQUE ====================
   function createBot(team) {
     const teamColors = { red: '#ff4444', blue: '#4488ff' };
     const weaponKey = BOT_WEAPON_KEYS[Math.floor(Math.random() * BOT_WEAPON_KEYS.length)];
@@ -738,7 +833,7 @@ window.initGame = function() {
     return {
       x: 200 + Math.random() * (MAP_W - 400),
       y: 200 + Math.random() * (MAP_H - 400),
-      radius: 14,
+      radius: 18,
       hp: 80, maxHp: 80,
       speed: 2.5,
       team: team,
@@ -747,7 +842,7 @@ window.initGame = function() {
       weapon: w,
       aimAngle: Math.random() * Math.PI * 2,
       cooldown: 20 + Math.random() * 40,
-      target: null,
+      bodyAngle: Math.random() * Math.PI * 2,
       isBot: true
     };
   }
@@ -756,10 +851,12 @@ window.initGame = function() {
     bots = [];
     const mode = MODES[currentMode];
     if (mode.teamMode) {
-      for (let i = 0; i < 4; i++) bots.push(createBot('red'));
-      for (let i = 0; i < 4; i++) bots.push(createBot('blue'));
+      for (let i = 0; i < mode.botsPerTeam; i++) bots.push(createBot('red'));
+      for (let i = 0; i < mode.botsPerTeam; i++) bots.push(createBot('blue'));
     } else if (mode.bots) {
-      for (let i = 0; i < mode.bots; i++) bots.push(createBot(Math.random() < 0.5 ? 'red' : 'blue'));
+      for (let i = 0; i < mode.bots; i++) {
+        bots.push(createBot(Math.random() < 0.5 ? 'red' : 'blue'));
+      }
     }
   }
 
@@ -768,34 +865,30 @@ window.initGame = function() {
       const bot = bots[i];
       if (bot.hp <= 0) continue;
 
-      // Buscar objetivos
-      let closestDist = Infinity, target = null, targetType = null;
+      let closestDist = Infinity, target = null;
 
-      // Enemigos
       for (let j = 0; j < enemies.length; j++) {
         const e = enemies[j];
         const d = Math.hypot(e.x - bot.x, e.y - bot.y);
-        if (d < closestDist) { closestDist = d; target = e; targetType = 'enemy'; }
+        if (d < closestDist) { closestDist = d; target = e; }
       }
-      // Bots enemigos
       for (let j = 0; j < bots.length; j++) {
         if (i === j || bots[j].hp <= 0) continue;
         if (bots[j].team !== bot.team) {
           const d = Math.hypot(bots[j].x - bot.x, bots[j].y - bot.y);
-          if (d < closestDist) { closestDist = d; target = bots[j]; targetType = 'bot'; }
+          if (d < closestDist) { closestDist = d; target = bots[j]; }
         }
       }
-      // Jugador (solo si es de otro equipo)
-      if (bot.team !== (player ? player.team : 'blue') && player) {
+      if (bot.team !== 'blue' && player) {
         const d = Math.hypot(player.x - bot.x, player.y - bot.y);
-        if (d < closestDist) { closestDist = d; target = player; targetType = 'player'; }
+        if (d < closestDist) { closestDist = d; target = player; }
       }
 
       if (target) {
         const dx = target.x - bot.x, dy = target.y - bot.y;
         const dist = Math.hypot(dx, dy);
         bot.aimAngle = Math.atan2(dy, dx);
-        // Moverse hacia el objetivo si está lejos
+        bot.bodyAngle = bot.aimAngle;
         if (dist > 250) {
           bot.x += (dx / dist) * bot.speed;
           bot.y += (dy / dist) * bot.speed;
@@ -803,18 +896,15 @@ window.initGame = function() {
           bot.x -= (dx / dist) * bot.speed * 0.7;
           bot.y -= (dy / dist) * bot.speed * 0.7;
         }
-        // Disparar
         if (bot.cooldown <= 0 && dist < 450) {
           fireBotWeapon(bot, bot.aimAngle);
           bot.cooldown = bot.weapon.cooldown;
         }
       } else {
-        // Movimiento aleatorio
-        bot.aimAngle += (Math.random() - 0.5) * 0.15;
-        bot.x += Math.cos(bot.aimAngle) * bot.speed * 0.5;
-        bot.y += Math.sin(bot.aimAngle) * bot.speed * 0.5;
+        bot.bodyAngle += (Math.random() - 0.5) * 0.1;
+        bot.x += Math.cos(bot.bodyAngle) * bot.speed * 0.5;
+        bot.y += Math.sin(bot.bodyAngle) * bot.speed * 0.5;
       }
-
       if (bot.cooldown > 0) bot.cooldown--;
       resolveWallCollision(bot);
       bot.x = Math.max(bot.radius, Math.min(MAP_W - bot.radius, bot.x));
@@ -841,11 +931,10 @@ window.initGame = function() {
         explosion: w.explosion || false
       });
     }
-    // Sonido de disparo (más suave que el jugador)
-    playTone(400, 0.05, 'square', 0.05, 200);
+    playTone(400, 0.05, 'square', 0.04, 200);
   }
 
-  // ==================== DISPARO DEL JUGADOR ====================
+  // ==================== DISPARO JUGADOR ====================
   function pointSegmentDistance(px, py, x1, y1, x2, y2) {
     const dx = x2 - x1, dy = y2 - y1;
     const lenSq = dx * dx + dy * dy;
@@ -914,7 +1003,6 @@ window.initGame = function() {
           candidates.push({ target: b, d: Math.hypot(b.x - player.x, b.y - player.y), type: 'bot' });
         }
       }
-      // Comida destructible
       for (let i = 0; i < foodItems.length; i++) {
         const f = foodItems[i];
         if (pointSegmentDistance(f.x, f.y, player.x, player.y, rayEnd.x, rayEnd.y) < f.radius + player.rayWidth / 2) {
@@ -930,14 +1018,13 @@ window.initGame = function() {
         hitEntities.push(cand.target);
 
         if (cand.type === 'food') {
-          // Destruir comida y dar XP
           const f = cand.target;
           xp += f.xpValue;
+          gems += 1; // Gema extra por comida
           addHitParticles(f.x, f.y, f.color, 8);
           playTone(600, 0.08, 'sine', 0.1, 900);
           const idx = foodItems.indexOf(f);
           if (idx !== -1) foodItems.splice(idx, 1);
-          // Regenerar comida
           setTimeout(function() {
             foodItems.push({
               x: 100 + Math.random() * (MAP_W - 200),
@@ -947,7 +1034,7 @@ window.initGame = function() {
               color: 'hsl(' + Math.random() * 60 + 40 + ', 90%, 60%)',
               pulse: Math.random() * Math.PI * 2
             });
-          }, 2000 + Math.random() * 3000);
+          }, 1500 + Math.random() * 2000);
         } else {
           cand.target.hp -= player.rayDamage;
           addHitParticles(cand.target.x, cand.target.y, r.color, 4);
@@ -956,10 +1043,12 @@ window.initGame = function() {
               const idx = enemies.indexOf(cand.target);
               if (idx !== -1) enemies.splice(idx, 1);
               xp += 2; totalKills++;
+              gems += 1; // Gema por enemigo
             } else if (cand.type === 'bot') {
               const idx = bots.indexOf(cand.target);
               if (idx !== -1) bots.splice(idx, 1);
               xp += 5; totalKills++;
+              gems += 2; // Gema por bot
             }
             addHitParticles(cand.target.x, cand.target.y, '#ffaa66', 10);
           }
@@ -973,7 +1062,6 @@ window.initGame = function() {
   function update() {
     if (!gameActive || !player) return;
 
-    // Movimiento
     let dx = 0, dy = 0;
     if (keys.w) dy -= 1; if (keys.s) dy += 1;
     if (keys.a) dx -= 1; if (keys.d) dx += 1;
@@ -1030,17 +1118,14 @@ window.initGame = function() {
 
     if (rayEffect.active) { rayEffect.timer--; if (rayEffect.timer <= 0) rayEffect.active = false; }
 
-    // Spawn enemigos
     enemySpawnTimer++;
     if (enemySpawnTimer >= MODES[currentMode].spawnRate) {
       enemySpawnTimer = 0;
       if (enemies.length < MODES[currentMode].maxEnemies) spawnEnemy();
     }
 
-    // Bots
     updateBots();
 
-    // Enemigos
     for (let i = enemies.length - 1; i >= 0; i--) {
       const e = enemies[i];
       const edx = player.x - e.x, edy = player.y - e.y;
@@ -1054,19 +1139,17 @@ window.initGame = function() {
         if (!godMode) {
           player.hp -= 8;
           e.hp -= player.bodyDamage;
-          if (e.hp <= 0) { enemies.splice(i, 1); xp += 2; totalKills++; }
+          if (e.hp <= 0) { enemies.splice(i, 1); xp += 2; totalKills++; gems += 1; }
           updateUI();
         }
         if (!godMode && player.hp <= 0) { gameOver(); return; }
       }
     }
 
-    // Proyectiles de bots
     for (let i = projectiles.length - 1; i >= 0; i--) {
       const p = projectiles[i];
       p.x += p.vx; p.y += p.vy; p.life--;
 
-      // Colisión con paredes
       let hitWall = false;
       for (let w = 0; w < walls.length; w++) {
         const wall = walls[w];
@@ -1075,20 +1158,12 @@ window.initGame = function() {
         }
       }
       if (hitWall) {
-        if (p.explosion) {
-          addHitParticles(p.x, p.y, '#ff6600', 15);
-          // Daño en área
-          if (Math.hypot(p.x - player.x, p.y - player.y) < 80) {
-            if (!godMode) { player.hp -= p.damage; updateUI(); }
-          }
-        }
-        projectiles.splice(i, 1);
-        continue;
+        if (p.explosion) addHitParticles(p.x, p.y, '#ff6600', 15);
+        projectiles.splice(i, 1); continue;
       }
 
       if (p.life <= 0) { projectiles.splice(i, 1); continue; }
 
-      // Colisión con jugador
       if (p.team !== 'blue' && Math.hypot(p.x - player.x, p.y - player.y) < player.radius + p.radius) {
         if (!godMode) { player.hp -= p.damage; updateUI(); }
         projectiles.splice(i, 1);
@@ -1096,7 +1171,6 @@ window.initGame = function() {
         continue;
       }
 
-      // Colisión con bots enemigos
       let hitBot = false;
       for (let b = 0; b < bots.length; b++) {
         if (bots[b].hp <= 0 || bots[b].team === p.team) continue;
@@ -1105,18 +1179,18 @@ window.initGame = function() {
           hitBot = true;
           if (bots[b].hp <= 0) {
             addHitParticles(bots[b].x, bots[b].y, bots[b].color, 12);
+            if (p.team === 'blue') { xp += 5; gems += 2; totalKills++; }
           }
           break;
         }
       }
       if (hitBot) { projectiles.splice(i, 1); continue; }
 
-      // Colisión con enemigos
       for (let e = 0; e < enemies.length; e++) {
         if (Math.hypot(p.x - enemies[e].x, p.y - enemies[e].y) < enemies[e].radius + p.radius) {
           enemies[e].hp -= p.damage;
           if (enemies[e].hp <= 0) {
-            xp += 2; totalKills++;
+            xp += 2; totalKills++; gems += 1;
             addHitParticles(enemies[e].x, enemies[e].y, '#ffaa66', 8);
             enemies.splice(e, 1);
           }
@@ -1126,27 +1200,26 @@ window.initGame = function() {
       }
     }
 
-    // Level up
+    // Level up + evolución
     if (xp >= xpToNext && !levelUpPending) {
       levelUpPending = true;
       level++;
       xp = 0;
       xpToNext = Math.floor(10 + level * 3);
-      gems += 3;
-      showToast('⭐ ¡Nivel ' + level + '! +3 gemas');
+      gems += 10; // Más gemas al subir
+      showToast('⭐ ¡Nivel ' + level + '! +10 gemas');
       Object.keys(TANKS).forEach(function(k) {
         const t = TANKS[k];
         if (!t.adminOnly && t.levelReq > 0 && t.levelReq <= level && !ownedTanks[k]) {
           ownedTanks[k] = true;
-          showToast('🎁 ¡' + t.name + ' desbloqueado!');
         }
       });
+      checkTankEvolution();
       updateUI();
       setTimeout(function() { levelUpPending = false; }, 1000);
       saveGame();
     }
 
-    // Partículas
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life -= 0.022;
@@ -1155,15 +1228,25 @@ window.initGame = function() {
     for (let i = 0; i < stars.length; i++) stars[i].twinkle += stars[i].speed;
   }
 
+  // ==================== GAME OVER CON ANIMACIÓN ====================
   function gameOver() {
     player.hp = 0;
     gameActive = false;
     playTone(300, 0.3, 'sawtooth', 0.15, 150);
+    playTone(200, 0.5, 'sine', 0.2, 80);
     saveGame();
-    setTimeout(function() {
-      alert('💀 Has caído.\nNivel: ' + level + '\nBajas: ' + totalKills);
+
+    // Mostrar animación
+    deathStats.innerHTML =
+      'Nivel alcanzado: <b>' + level + '</b><br>' +
+      'Bajas totales: <b>' + totalKills + '</b><br>' +
+      'Gemas: <b>' + gems + '</b>';
+    deathOverlay.classList.add('show');
+
+    deathRestartBtn.onclick = function() {
+      deathOverlay.classList.remove('show');
       resetGame();
-    }, 400);
+    };
   }
 
   // ==================== ENEMIGOS ====================
@@ -1219,7 +1302,6 @@ window.initGame = function() {
     ctx.strokeStyle = 'rgba(100, 160, 255, 0.3)'; ctx.lineWidth = 4;
     ctx.strokeRect(0, 0, MAP_W, MAP_H);
 
-    // Paredes
     for (let i = 0; i < walls.length; i++) {
       const w = walls[i];
       const grad = ctx.createLinearGradient(w.x, w.y, w.x, w.y + w.h);
@@ -1229,16 +1311,12 @@ window.initGame = function() {
       ctx.strokeRect(w.x, w.y, w.w, w.h);
     }
 
-    // Comida destructible
     for (let i = 0; i < foodItems.length; i++) {
       const f = foodItems[i];
       const s = f.radius + Math.sin(f.pulse) * 1.5;
       ctx.beginPath(); ctx.arc(f.x, f.y, s, 0, Math.PI * 2);
-      ctx.fillStyle = f.color;
-      ctx.shadowBlur = 12; ctx.shadowColor = f.color;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      // Brillo interno
+      ctx.fillStyle = f.color; ctx.shadowBlur = 12; ctx.shadowColor = f.color;
+      ctx.fill(); ctx.shadowBlur = 0;
       ctx.beginPath(); ctx.arc(f.x - 2, f.y - 2, s * 0.4, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
     }
@@ -1256,28 +1334,72 @@ window.initGame = function() {
       ctx.fillRect(e.x - 18, e.y - e.radius - 14, 36 * hpPct, 5);
     }
 
-    // Bots
+    // ===== BOTS TANQUE =====
     for (let i = 0; i < bots.length; i++) {
       const b = bots[i];
       if (b.hp <= 0) continue;
       ctx.save();
-      ctx.shadowBlur = 15; ctx.shadowColor = b.color;
-      ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-      ctx.fillStyle = b.color; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-      // Cañón del bot (color según arma)
-      const bx = b.x + Math.cos(b.aimAngle) * (b.radius + 8);
-      const by = b.y + Math.sin(b.aimAngle) * (b.radius + 8);
-      ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(bx, by);
-      ctx.strokeStyle = b.weapon.color; ctx.lineWidth = 4; ctx.stroke();
-      // Indicador de arma
-      ctx.font = '8px monospace'; ctx.textAlign = 'center';
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.bodyAngle);
+
+      // Sombra
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath();
+      ctx.ellipse(2, 3, b.radius * 1.1, b.radius * 0.9, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orugas (2 rectángulos)
+      ctx.fillStyle = '#333';
+      ctx.fillRect(-b.radius, -b.radius * 0.85, b.radius * 2, b.radius * 0.5);
+      ctx.fillRect(-b.radius, b.radius * 0.35, b.radius * 2, b.radius * 0.5);
+      // Detalles de oruga
+      ctx.fillStyle = '#555';
+      for (let j = 0; j < 4; j++) {
+        ctx.fillRect(-b.radius + j * (b.radius * 0.5), -b.radius * 0.85, 3, b.radius * 0.5);
+        ctx.fillRect(-b.radius + j * (b.radius * 0.5), b.radius * 0.35, 3, b.radius * 0.5);
+      }
+
+      // Cuerpo del tanque
+      const bodyGrad = ctx.createLinearGradient(0, -b.radius * 0.6, 0, b.radius * 0.6);
+      bodyGrad.addColorStop(0, b.color);
+      bodyGrad.addColorStop(1, shadeColor(b.color, -40));
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.roundRect(-b.radius * 0.75, -b.radius * 0.5, b.radius * 1.5, b.radius, 4);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Torre (torreta)
+      ctx.fillStyle = shadeColor(b.color, 20);
+      ctx.beginPath();
+      ctx.arc(0, 0, b.radius * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.stroke();
+
+      // Cañón apuntando al objetivo
+      const localAim = b.aimAngle - b.bodyAngle;
+      ctx.rotate(localAim);
+      ctx.fillStyle = shadeColor(b.weapon.color, 10);
+      ctx.fillRect(0, -3, b.radius * 1.3, 6);
       ctx.fillStyle = b.weapon.color;
-      ctx.fillText(b.weapon.name.substring(0, 3), b.x, b.y - b.radius - 4);
+      ctx.fillRect(b.radius * 1.2, -2, 4, 4);
+
       ctx.restore();
+
+      // Barra de vida
       const hpPct = b.hp / b.maxHp;
-      ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36, 4);
-      ctx.fillStyle = b.color; ctx.fillRect(b.x - 18, b.y - b.radius - 12, 36 * hpPct, 4);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(b.x - 20, b.y - b.radius - 14, 40, 5);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x - 20, b.y - b.radius - 14, 40 * hpPct, 5);
+
+      // Indicador de arma
+      ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = b.weapon.color;
+      ctx.fillText(b.weapon.name.substring(0, 4), b.x, b.y - b.radius - 18);
     }
 
     // Proyectiles
@@ -1316,27 +1438,46 @@ window.initGame = function() {
       }
     }
 
-    // Jugador
+    // Jugador (tanque también)
     if (player) {
       ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.aimAngle);
+
       ctx.shadowColor = godMode ? '#ffdd00' : '#2ad4ff';
       ctx.shadowBlur = 25;
-      const pg = ctx.createRadialGradient(player.x - 5, player.y - 5, 2, player.x, player.y, player.radius);
-      pg.addColorStop(0, '#8fdcff');
-      pg.addColorStop(0.5, godMode ? '#ffcc33' : '#2b8cff');
-      pg.addColorStop(1, '#0a2a5a');
-      ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fillStyle = pg; ctx.fill();
-      ctx.strokeStyle = godMode ? '#ffe680' : '#7dd4ff'; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.restore();
 
-      const ang = player.aimAngle;
-      const tipX = player.x + Math.cos(ang) * (player.radius + 14 - player.recoil);
-      const tipY = player.y + Math.sin(ang) * (player.radius + 14 - player.recoil);
-      ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(tipX, tipY);
-      ctx.lineWidth = 8; ctx.strokeStyle = '#1a3a6a'; ctx.lineCap = 'round'; ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(tipX, tipY);
-      ctx.lineWidth = 3; ctx.strokeStyle = player.isCharging ? '#ffdd66' : '#7dd4ff'; ctx.stroke();
+      // Orugas
+      ctx.fillStyle = '#1a3a5a';
+      ctx.fillRect(-player.radius, -player.radius * 0.85, player.radius * 2, player.radius * 0.5);
+      ctx.fillRect(-player.radius, player.radius * 0.35, player.radius * 2, player.radius * 0.5);
+
+      // Cuerpo
+      const pg = ctx.createLinearGradient(0, -player.radius * 0.6, 0, player.radius * 0.6);
+      pg.addColorStop(0, godMode ? '#ffcc33' : '#2b8cff');
+      pg.addColorStop(1, godMode ? '#8a6a00' : '#0a2a5a');
+      ctx.fillStyle = pg;
+      ctx.beginPath();
+      ctx.roundRect(-player.radius * 0.75, -player.radius * 0.5, player.radius * 1.5, player.radius, 4);
+      ctx.fill();
+      ctx.strokeStyle = godMode ? '#ffe680' : '#7dd4ff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Torreta
+      ctx.fillStyle = godMode ? '#ffdd00' : '#7dd4ff';
+      ctx.beginPath();
+      ctx.arc(0, 0, player.radius * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cañón
+      ctx.fillStyle = '#1a3a6a';
+      ctx.fillRect(0, -3, player.radius + 14 - player.recoil, 6);
+      ctx.fillStyle = player.isCharging ? '#ffdd66' : '#7dd4ff';
+      ctx.fillRect(player.radius + 10 - player.recoil, -2, 4, 4);
+
+      ctx.restore();
+      ctx.shadowBlur = 0;
     }
 
     ctx.restore();
@@ -1346,7 +1487,7 @@ window.initGame = function() {
       ctx.font = 'bold 10px "Segoe UI", monospace'; ctx.textAlign = 'center';
       const px = player.x - camera.x, py = player.y - camera.y;
       ctx.fillStyle = RAILGUNS[currentRailgunKey].color;
-      ctx.fillText(RAILGUNS[currentRailgunKey].name, px, py - player.radius - 18);
+      ctx.fillText(RAILGUNS[currentRailgunKey].name, px, py - player.radius - 20);
     }
 
     // Barra XP
@@ -1362,6 +1503,16 @@ window.initGame = function() {
     drawMinimap();
   }
 
+  function shadeColor(color, percent) {
+    // Aclara u oscurece un color hex
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.max(0, Math.min(255, (num >> 16) + amt));
+    const G = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amt));
+    const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
+    return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+  }
+
   function drawMinimap() {
     mctx.clearRect(0, 0, 130, 130);
     mctx.fillStyle = 'rgba(5, 10, 18, 0.8)'; mctx.fillRect(0, 0, 130, 130);
@@ -1375,7 +1526,7 @@ window.initGame = function() {
     for (let i = 0; i < bots.length; i++) {
       if (bots[i].hp <= 0) continue;
       mctx.fillStyle = bots[i].color;
-      mctx.beginPath(); mctx.arc(bots[i].x * sx, bots[i].y * sy, 2, 0, Math.PI * 2); mctx.fill();
+      mctx.beginPath(); mctx.arc(bots[i].x * sx, bots[i].y * sy, 2.5, 0, Math.PI * 2); mctx.fill();
     }
     if (player) {
       mctx.fillStyle = '#4df0ff';
@@ -1388,6 +1539,7 @@ window.initGame = function() {
   function updateUI() {
     levelSpan.textContent = level;
     gemDisplay.textContent = gems;
+    xpDisplay.textContent = xp;
     shopGemCount.textContent = gems;
     if (player) {
       hpFillSpan.style.width = Math.max(0, (player.hp / player.maxHp) * 100) + '%';
@@ -1397,6 +1549,7 @@ window.initGame = function() {
   function resetGame() {
     gameActive = true; level = 1; xp = 0; xpToNext = 10;
     enemies = []; bots = []; particles = []; projectiles = [];
+    currentTankKey = 'base';
     player = createPlayer();
     godMode = false; regenAccumulator = 0; levelUpPending = false;
     generateWalls(); generateFood(); spawnBotsForMode();
@@ -1490,8 +1643,8 @@ window.initGame = function() {
           ownedTanks[drop.key] = true;
           html = '<div class="big-icon">' + t.icon + '</div><div class="reward-display">¡' + t.name + '!</div><div class="reward-sub">' + t.rarity.toUpperCase() + '</div>';
         } else {
-          gems += 30;
-          html = '<div class="big-icon">💎</div><div class="reward-display">Repetido +30</div>';
+          gems += 50;
+          html = '<div class="big-icon">💎</div><div class="reward-display">Repetido +50</div>';
         }
       } else if (drop.type === 'railgun') {
         if (drop.key === 'double' && !ownedTanks.railgun_double) {
@@ -1511,9 +1664,10 @@ window.initGame = function() {
       playTone(523, 0.15, 'triangle', 0.15, 1046);
       updateUI(); saveGame();
       document.getElementById('chestAccept').addEventListener('click', function() { chestModal.classList.remove('open'); });
-    }, 1000);
+    }, 800);
   }
 
+  // ==================== MEJORAS CON XP ====================
   function renderUpgrades() {
     upgradeBar.innerHTML = '';
     Object.keys(UPGRADES_DEF).forEach(function(key) {
@@ -1521,20 +1675,21 @@ window.initGame = function() {
       const lvl = upgrades[key];
       const maxed = lvl >= def.maxLevel;
       const cost = getUpgradeCost(key);
+      const canAfford = xp >= cost;
       const btn = document.createElement('div');
-      btn.className = 'upgrade-btn' + (maxed ? ' maxed' : '');
+      btn.className = 'upgrade-btn' + (maxed ? ' maxed' : '') + ((!maxed && !canAfford) ? ' no-xp' : '');
       btn.innerHTML = '<div class="upg-icon">' + def.icon + '</div><div class="upg-cost">' + (maxed ? 'MAX' : cost) + '</div>';
-      btn.title = def.name + ' · ' + def.effect + ' · Nivel ' + lvl + '/' + def.maxLevel;
+      btn.title = def.name + ' · ' + def.effect + ' · Nivel ' + lvl + '/' + def.maxLevel + ' · Coste: ' + cost + ' XP';
       btn.addEventListener('click', function() {
         if (maxed) { showToast('Máximo alcanzado'); return; }
-        if (gems < cost) { showToast('💎 Necesitas ' + cost + ' gemas'); return; }
-        gems -= cost;
+        if (xp < cost) { showToast('✨ Necesitas ' + cost + ' XP'); return; }
+        xp -= cost;
         upgrades[key]++;
         updateUI(); renderUpgrades();
         const newP = createPlayer();
         newP.x = player.x; newP.y = player.y; newP.hp = Math.min(player.hp, newP.maxHp);
         player = newP;
-        showToast('✅ ' + def.name + ' mejorado');
+        showToast('✅ ' + def.name + ' mejorado (-' + cost + ' XP)');
         saveGame();
       });
       upgradeBar.appendChild(btn);
@@ -1672,13 +1827,14 @@ window.initGame = function() {
   }
 
   document.getElementById('admLevelUp').addEventListener('click', function() {
-    level++; gems += 5; updateUI(); showToast('⭐ Nivel ' + level);
+    level++; xp = 0; gems += 20; updateUI(); showToast('⭐ Nivel ' + level);
     Object.keys(TANKS).forEach(function(k) {
       const t = TANKS[k];
       if (!t.adminOnly && t.levelReq > 0 && t.levelReq <= level && !ownedTanks[k]) {
         ownedTanks[k] = true; showToast('🎁 ' + t.name);
       }
     });
+    checkTankEvolution();
     saveGame();
   });
   document.getElementById('admAddGems').addEventListener('click', function() { gems += 100; updateUI(); showToast('💎 +100'); saveGame(); });
